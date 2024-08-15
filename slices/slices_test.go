@@ -85,3 +85,101 @@ func TestMerge(t *testing.T) {
 		})
 	}
 }
+
+func TestContains(t *testing.T) {
+	t.Parallel()
+
+	// SliceInt tests the Contains function for slices of integers. This test ensures that the Contains function
+	// accurately identifies whether a specific integer is present in a slice of integers. It covers a variety of
+	// cases to verify correctness, including scenarios where the element is present or absent from the slice.
+	t.Run("SliceInt", func(t *testing.T) {
+		// Define a range of test cases for the Contains function with integer slices.
+		tests := []struct {
+			name     string
+			elements []int
+			element  int
+			expected bool
+		}{
+			{
+				name:     "Element is in the slice",
+				elements: []int{1, 2, 3, 4, 5},
+				element:  3,
+				expected: true,
+			},
+			{
+				name:     "Element is not in the slice",
+				elements: []int{1, 2, 3, 4, 5},
+				element:  6,
+				expected: false,
+			},
+			{
+				name:     "Empty slice",
+				elements: []int{},
+				element:  1,
+				expected: false,
+			},
+			{
+				name:     "Empty slice with empty element",
+				elements: []int{},
+				element:  0,
+				expected: false,
+			},
+			{
+				name:     "Single element slice contains element",
+				elements: []int{1},
+				element:  1,
+				expected: true,
+			},
+			{
+				name:     "Single element slice does not contain element",
+				elements: []int{1},
+				element:  2,
+				expected: false,
+			},
+			{
+				name:     "Multiple elements, element at start",
+				elements: []int{5, 1, 2, 3, 4},
+				element:  5,
+				expected: true,
+			},
+			{
+				name:     "Multiple elements, element at end",
+				elements: []int{1, 2, 3, 4, 5},
+				element:  5,
+				expected: true,
+			},
+			{
+				name:     "Multiple elements, element in middle",
+				elements: []int{1, 2, 3, 4, 5},
+				element:  3,
+				expected: true,
+			},
+			{
+				name:     "Multiple elements, element repeated",
+				elements: []int{1, 2, 3, 3, 4, 5},
+				element:  3,
+				expected: true,
+			},
+			{
+				name:     "Nil slice",
+				elements: nil,
+				element:  1,
+				expected: false,
+			},
+		}
+
+		// Iterate through each test case and execute the Contains function
+		for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+				// Call the Contains function with the current test case's elements and element.
+				// The Contains function will return whether the element is present in the slice.
+				result := Contains(tt.elements, tt.element)
+
+				// Assert that the result from the Contains function matches the expected value.
+				// If the result does not match the expected value, the test will fail, and the
+				// provided error message will help identify which test case failed and why.
+				assert.Equal(t, tt.expected, result, "result should match the expected value for test case: %s", tt.name)
+			})
+		}
+	})
+}
