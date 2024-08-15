@@ -1,6 +1,7 @@
 package slices
 
 import (
+	"sort"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -179,6 +180,102 @@ func TestContains(t *testing.T) {
 				// If the result does not match the expected value, the test will fail, and the
 				// provided error message will help identify which test case failed and why.
 				assert.Equal(t, tt.expected, result, "result should match the expected value for test case: %s", tt.name)
+			})
+		}
+	})
+
+	// SliceString tests the Contains function for slices of strings.
+	// It verifies that the function correctly identifies the presence or absence of an element
+	// in various scenarios involving string slices, including sorted and unsorted slices.
+	t.Run("SliceString", func(t *testing.T) {
+		// Define test cases with various scenarios for slices of strings.
+		tests := []struct {
+			name     string
+			elements []string
+			element  string
+			expected bool
+		}{
+			{
+				name:     "Nil slice",
+				elements: nil,
+				element:  "test",
+				expected: false,
+			},
+			{
+				name:     "Empty slice",
+				elements: []string{},
+				element:  "test",
+				expected: false,
+			},
+			{
+				name:     "Element in single-element sorted slice",
+				elements: []string{"test"},
+				element:  "test",
+				expected: true,
+			},
+			{
+				name:     "Element not in single-element sorted slice",
+				elements: []string{"test"},
+				element:  "notfound",
+				expected: false,
+			},
+			{
+				name:     "Element in multiple-element sorted slice",
+				elements: []string{"alpha", "beta", "gamma"},
+				element:  "beta",
+				expected: true,
+			},
+			{
+				name:     "Element not in multiple-element sorted slice",
+				elements: []string{"alpha", "beta", "gamma"},
+				element:  "delta",
+				expected: false,
+			},
+			{
+				name:     "Element at the beginning of the sorted slice",
+				elements: []string{"alpha", "beta", "gamma"},
+				element:  "alpha",
+				expected: true,
+			},
+			{
+				name:     "Element at the end of the sorted slice",
+				elements: []string{"alpha", "beta", "gamma"},
+				element:  "gamma",
+				expected: true,
+			},
+			{
+				name:     "Unsorted slice (contains element)",
+				elements: []string{"beta", "alpha", "gamma"},
+				element:  "alpha",
+				expected: true,
+			},
+			{
+				name:     "Unsorted slice (does not contain element)",
+				elements: []string{"beta", "alpha", "gamma"},
+				element:  "delta",
+				expected: false,
+			},
+		}
+
+		// Iterate over each test case and execute the Contains function.
+		for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+				// Sort the slice of strings to prepare it for testing the Contains function.
+				// Sorting ensures that the Contains function operates correctly on ordered data.
+				// This step is essential if the slice is not nil, as it standardizes the input for the test.
+				if tt.elements != nil {
+					// Sort the slice of strings in ascending order.
+					// Sorting is done to match the expected behavior of the Contains function when the slice is ordered.
+					sort.Strings(tt.elements)
+				}
+
+				// Call the Contains function with the current test case’s slice and element.
+				result := Contains(tt.elements, tt.element)
+
+				// Assert that the result matches the expected value.
+				// If the result does not match, the test will fail, and the message will include
+				// the test case details for easy identification of the failure.
+				assert.Equal(t, tt.expected, result, "Expected Contains(%v, %v) to be %v but result %v", tt.elements, tt.element, tt.expected, result)
 			})
 		}
 	})
