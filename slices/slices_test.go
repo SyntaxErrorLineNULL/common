@@ -7,9 +7,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// TestMerge is a table-driven test function for testing the Merge function.
-// It iterates over a series of test cases, each with different input slices (first, second),
-// and checks whether the Merge function produces the expected result (expected).
 func TestMerge(t *testing.T) {
 	// Define a slice of test cases.
 	cases := []struct {
@@ -95,7 +92,7 @@ func TestContains(t *testing.T) {
 	// cases to verify correctness, including scenarios where the element is present or absent from the slice.
 	t.Run("SliceInt", func(t *testing.T) {
 		// Define a range of test cases for the Contains function with integer slices.
-		tests := []struct {
+		cases := []struct {
 			name     string
 			elements []int
 			element  int
@@ -170,7 +167,7 @@ func TestContains(t *testing.T) {
 		}
 
 		// Iterate through each test case and execute the Contains function
-		for _, tt := range tests {
+		for _, tt := range cases {
 			t.Run(tt.name, func(t *testing.T) {
 				// Call the Contains function with the current test case's elements and element.
 				// The Contains function will return whether the element is present in the slice.
@@ -276,6 +273,73 @@ func TestContains(t *testing.T) {
 				// If the result does not match, the test will fail, and the message will include
 				// the test case details for easy identification of the failure.
 				assert.Equal(t, tt.expected, result, "Expected Contains(%v, %v) to be %v but result %v", tt.elements, tt.element, tt.expected, result)
+			})
+		}
+	})
+}
+
+func TestExclude(t *testing.T) {
+	t.Parallel()
+
+	// SliceString tests the Exclude function for slices of integers. This test suite is designed to ensure that
+	// the Exclude function correctly removes all occurrences of a specified integer from a slice. The test cases
+	// cover a range of scenarios, including removing an element that appears once or multiple times, trying to
+	// remove an element that does not exist in the slice, and handling empty or nil slices.
+	t.Run("SliceString", func(t *testing.T) {
+		cases := []struct {
+			name     string
+			elements []int
+			element  int
+			expected []int
+		}{
+			{
+				name:     "ExcludeSingleElement",
+				elements: []int{1, 2, 3, 4, 5},
+				element:  3,
+				expected: []int{1, 2, 4, 5},
+			},
+			{
+				name:     "ExcludeMultipleOccurrences",
+				elements: []int{1, 2, 3, 3, 4, 3, 5},
+				element:  3,
+				expected: []int{1, 2, 4, 5},
+			},
+			{
+				name:     "ExcludeNonexistentElement",
+				elements: []int{1, 2, 3, 4, 5},
+				element:  6,
+				expected: []int{1, 2, 3, 4, 5},
+			},
+			{
+				name:     "ExcludeEmptySlice",
+				elements: []int{},
+				element:  1,
+				expected: []int{},
+			},
+			{
+				name:     "ExcludeSingleElementSlice",
+				elements: []int{1},
+				element:  1,
+				expected: []int{},
+			},
+			{
+				name:     "ExcludeNilSlice",
+				elements: nil,
+				element:  1,
+				expected: nil,
+			},
+		}
+
+		// Iterate through each test case and execute the Exclude function.
+		for _, tt := range cases {
+			t.Run(tt.name, func(t *testing.T) {
+				// Call the Exclude function with the current test case's elements and element.
+				result := Exclude(tt.elements, tt.element)
+
+				// Assert that the result from the Exclude function matches the expected value.
+				// If the result does not match the expected value, the test will fail, and the
+				// provided error message will help identify which test case failed and why.
+				assert.Equal(t, tt.expected, result, "Test case %s failed", tt.name)
 			})
 		}
 	})
