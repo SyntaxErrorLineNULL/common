@@ -1,6 +1,7 @@
 package slices
 
 import (
+	"common/test"
 	"sort"
 	"testing"
 
@@ -327,6 +328,112 @@ func TestExclude(t *testing.T) {
 				elements: nil,
 				element:  1,
 				expected: nil,
+			},
+		}
+
+		// Iterate through each test case and execute the Exclude function.
+		for _, tt := range cases {
+			t.Run(tt.name, func(t *testing.T) {
+				// Call the Exclude function with the current test case's elements and element.
+				result := Exclude(tt.elements, tt.element)
+
+				// Assert that the result from the Exclude function matches the expected value.
+				// If the result does not match the expected value, the test will fail, and the
+				// provided error message will help identify which test case failed and why.
+				assert.Equal(t, tt.expected, result, "Test case %s failed", tt.name)
+			})
+		}
+	})
+
+	// SliceInt tests the Exclude function with various scenarios involving slices of integers. The goal of this test
+	// is to verify that the Exclude function correctly removes all occurrences of a specified integer from a slice.
+	// The test cases cover a range of conditions to ensure the function handles different situations accurately,
+	// including scenarios where elements appear multiple times, do not appear, or when the input slice is empty or nil.
+	// Additionally, it tests edge cases such as large slices and slices with negative numbers.
+	t.Run("SliceInt", func(t *testing.T) {
+		cases := []struct {
+			name     string
+			elements []int
+			element  int
+			expected []int
+		}{
+			{
+				name:     "ExcludeSingleElement",
+				elements: []int{1, 2, 3, 4, 5},
+				element:  3,
+				expected: []int{1, 2, 4, 5},
+			},
+			{
+				name:     "ExcludeMultipleOccurrences",
+				elements: []int{1, 2, 3, 3, 4, 3, 5},
+				element:  3,
+				expected: []int{1, 2, 4, 5},
+			},
+			{
+				name:     "ExcludeNonexistentElement",
+				elements: []int{1, 2, 3, 4, 5},
+				element:  6,
+				expected: []int{1, 2, 3, 4, 5},
+			},
+			{
+				name:     "ExcludeEmptySlice",
+				elements: []int{},
+				element:  1,
+				expected: []int{},
+			},
+			{
+				name:     "ExcludeSingleElementSlice",
+				elements: []int{1},
+				element:  1,
+				expected: []int{},
+			},
+			{
+				name:     "ExcludeNilSlice",
+				elements: nil,
+				element:  1,
+				expected: nil,
+			},
+			{
+				name:     "ExcludeAllElements",
+				elements: []int{7, 7, 7, 7, 7},
+				element:  7,
+				expected: []int{},
+			},
+			{
+				name:     "ExcludeFirstElement",
+				elements: []int{9, 2, 3, 4, 5},
+				element:  9,
+				expected: []int{2, 3, 4, 5},
+			},
+			{
+				name:     "ExcludeLastElement",
+				elements: []int{1, 2, 3, 4, 10},
+				element:  10,
+				expected: []int{1, 2, 3, 4},
+			},
+			{
+				name:     "ExcludeMiddleElement",
+				elements: []int{1, 2, 10, 4, 5},
+				element:  10,
+				expected: []int{1, 2, 4, 5},
+			},
+			{
+				name:     "ExcludeElementFromLargeSlice",
+				elements: test.CreateSequenceWithRepeats(1000, 500),
+				element:  500,
+				expected: test.CreateSequenceWithoutRepeats(1000),
+			},
+			{
+				name:     "ExcludeNegativeElement",
+				elements: []int{-3, -2, -1, 0, 1, 2, 3},
+				element:  -2,
+				expected: []int{-3, -1, 0, 1, 2, 3},
+			},
+			{
+				name:     "ExcludeFromMixedValues",
+				elements: []int{-1, 0, 1, -1, 0, 1},
+				element:  -1,
+				expected: []int{0, 1, 0, 1},
 			},
 		}
 
