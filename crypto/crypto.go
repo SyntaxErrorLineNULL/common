@@ -79,7 +79,7 @@ func (srv *Crypto) DecryptCBC(key string, iv []byte, cipherText string) ([]byte,
 	// These checks ensure that all required inputs are provided before attempting decryption.
 	switch {
 	case key == "", len(iv) == 0, len(cipherText) == 0:
-		return nil, errors.New("key, IV, or cipherText is empty")
+		return nil, errors.New("key, IV block, or cipherText is empty")
 	}
 
 	// Decode the hexadecimal key string into a byte slice.
