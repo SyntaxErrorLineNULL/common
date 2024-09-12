@@ -112,4 +112,37 @@ func TestCrypto(t *testing.T) {
 		// This ensures that the decryption method correctly identifies and reports the invalid key.
 		assert.Error(t, err, "Expected error for decryption with invalid key")
 	})
+
+	// EmptyCipherText tests the behavior of the decryption method when provided
+	// with an empty ciphertext. It verifies that the method returns an appropriate error
+	// when attempting to decrypt an empty string, ensuring that the decryption method
+	// handles this edge case correctly.
+	t.Run("EmptyCipherText", func(t *testing.T) {
+		// Define a valid encryption key for testing.
+		// This key is used for the decryption process, even though the ciphertext is empty.
+		key := "00112233445566778899aabbccddeeff"
+		// Generate the current time for use in creating the initialization vector (IV).
+		// This ensures that the IV is generated with a timestamp-based value.
+		currentTime := time.Now()
+		// Convert the current time to a Unix timestamp for use in the IV.
+		// This timestamp represents the current time in seconds since January 1, 1970.
+		unixTimestamp := currentTime.Unix()
+		// Convert the Unix timestamp to an unsigned 64-bit integer for use in the IV.
+		// This ensures the IV is a valid length for the encryption algorithm.
+		validUntil := uint64(unixTimestamp)
+
+		// Create an initialization vector (IV) with a length of 16 bytes.
+		// The IV is required for AES decryption to ensure proper decryption of the ciphertext.
+		iv := make([]byte, 16)
+		// Store the Unix timestamp in the first 8 bytes of the IV using big-endian encoding.
+		// This provides the IV with a timestamp-based value.
+		binary.BigEndian.PutUint64(iv, validUntil)
+
+		// Attempt to decrypt an empty ciphertext using the defined key and IV.
+		// This operation should fail since the ciphertext is empty and not valid for decryption.
+		_, err := crypto.DecryptCBC(key, iv, "")
+		// Assert that an error occurred during decryption with the empty ciphertext.
+		// This ensures that the decryption method correctly identifies and reports the invalid input.
+		assert.Error(t, err, "Expected error for decryption with empty cipher text")
+	})
 }
