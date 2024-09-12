@@ -1,4 +1,4 @@
-package main
+package tools
 
 // GetRecoverError extracts an error from a recoverable panic.
 // It checks if the recovered value is an error type, and if so, returns it.
