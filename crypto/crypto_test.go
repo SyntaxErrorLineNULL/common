@@ -68,4 +68,48 @@ func TestCrypto(t *testing.T) {
 		// indicating that the decryption process did not restore the original data correctly.
 		assert.Equal(t, plainText, decrypted, "Decrypted text does not match original")
 	})
+
+	// InvalidKey tests the behavior of the encryption and decryption methods
+	// when provided with an invalid encryption key. It verifies that the methods
+	// return appropriate errors when an invalid key is used for encryption and decryption.
+	// This test ensures that the encryption and decryption methods handle invalid keys
+	// correctly and fail gracefully, as expected.
+	t.Run("InvalidKey", func(t *testing.T) {
+		// Define an invalid encryption key for testing.
+		// This key is purposely incorrect to test the method's error handling.
+		invalidKey := "invalidkey"
+		// Generate the current time for use in creating the initialization vector (IV).
+		// This ensures that the IV is generated with a timestamp-based value.
+		currentTime := time.Now()
+		// Convert the current time to a Unix timestamp for use in the IV.
+		// This timestamp represents the current time in seconds since January 1, 1970.
+		unixTimestamp := currentTime.Unix()
+		// Convert the Unix timestamp to an unsigned 64-bit integer for use in the IV.
+		// This ensures the IV is a valid length for the encryption algorithm.
+		validUntil := uint64(unixTimestamp)
+		// Create an initialization vector (IV) with a length of 16 bytes.
+		// The IV is required for AES encryption to ensure unique ciphertexts for the same plaintext.
+		iv := make([]byte, 16)
+
+		// Store the Unix timestamp in the first 8 bytes of the IV using big-endian encoding.
+		// This provides the IV with a timestamp-based value.
+		binary.BigEndian.PutUint64(iv, validUntil)
+		// Define the plaintext to be encrypted.
+		// This is the data that will be encrypted and later decrypted to verify correctness.
+		plainText := []byte("Hello, Gophers!")
+
+		// Attempt to encrypt the plaintext using the invalid key.
+		// This operation should fail since the key is incorrect.
+		_, err := crypto.EncryptCBC(invalidKey, iv, plainText)
+		// Assert that an error occurred during encryption with the invalid key.
+		// This ensures that the encryption method correctly identifies and reports the invalid key.
+		assert.Error(t, err, "Expected error for invalid key")
+
+		// Attempt to decrypt a sample encrypted text using the invalid key.
+		// This operation should fail since the key is incorrect and does not match the encryption key.
+		_, err = crypto.DecryptCBC(invalidKey, iv, "test")
+		// Assert that an error occurred during decryption with the invalid key.
+		// This ensures that the decryption method correctly identifies and reports the invalid key.
+		assert.Error(t, err, "Expected error for decryption with invalid key")
+	})
 }
