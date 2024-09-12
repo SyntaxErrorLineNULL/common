@@ -145,4 +145,35 @@ func TestCrypto(t *testing.T) {
 		// This ensures that the decryption method correctly identifies and reports the invalid input.
 		assert.Error(t, err, "Expected error for decryption with empty cipher text")
 	})
+
+	// TestDecryptWithIncorrectIVLength tests the decryption functionality when an
+	// incorrect initialization vector (IV) length is provided. The decryption process
+	// requires an IV of the correct length, which for AES encryption is typically 16 bytes.
+	// In this test, an IV of only 8 bytes is used, which is deliberately incorrect, to
+	// verify that the decryption method handles this erroneous input appropriately.
+	// The test checks that the method returns an error when the IV length does not meet
+	// the expected size requirements. This ensures that the decryption process validates
+	// the IV length and fails gracefully when an invalid IV is supplied.
+	t.Run("DecryptWithIncorrectIVLength", func(t *testing.T) {
+		// Define a valid encryption key for testing purposes.
+		// This key is used in the decryption function but the actual decryption will fail
+		// due to the incorrect IV, so the key's correctness is not the focus of this test.
+		key := "00112233445566778899aabbccddeeff"
+		// Create an initialization vector (IV) with an incorrect length of 8 bytes.
+		// For AES encryption, the IV length should be 16 bytes. Using an incorrect IV length
+		// will help test how the decryption method handles invalid IV sizes.
+		invalidIV := make([]byte, 8)
+		// Define a sample ciphertext for the decryption attempt.
+		// This ciphertext is a placeholder and will not be processed due to the incorrect IV.
+		cipherText := "test"
+
+		// Attempt to decrypt the given ciphertext using the defined key and the incorrect IV.
+		// The decryption should fail because the IV length is not valid, which is the intended
+		// behavior to be tested.
+		_, err := crypto.DecryptCBC(key, invalidIV, cipherText)
+		// Assert that an error is returned during the decryption attempt with the incorrect IV.
+		// This confirms that the decryption function correctly identifies and reports the issue
+		// with the IV length, ensuring robust error handling in scenarios of invalid input.
+		assert.Error(t, err, "Expected error for decryption with incorrect IV length")
+	})
 }
