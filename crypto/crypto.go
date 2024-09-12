@@ -69,3 +69,78 @@ func (srv *Crypto) EncryptCBC(key string, iv, plainText []byte) (string, error) 
 	// The encrypted text is converted into a string format for easy storage or transmission.
 	return hex.EncodeToString(cipherText), nil
 }
+
+// DecryptCBC decrypts the given ciphertext using AES encryption with the specified key and initialization vector (IV).
+// It checks the validity of the key, IV, and ciphertext, and then performs decryption using AES in CBC mode.
+// The decrypted plaintext is returned after removing any padding added during encryption. If there are any issues
+// with the key, IV, or ciphertext, appropriate error messages are returned.
+func (srv *Crypto) DecryptCBC(key string, iv []byte, cipherText string) ([]byte, error) {
+	// Check for empty key, IV, or ciphertext and return an appropriate error message.
+	// These checks ensure that all required inputs are provided before attempting decryption.
+	switch {
+	case key == "", len(iv) == 0, len(cipherText) == 0:
+		return nil, errors.New("key, IV, or cipherText is empty")
+	}
+
+	// Decode the hexadecimal key string into a byte slice.
+	// The AES decryption process requires the key to be in byte format.
+	keyBytes, err := hex.DecodeString(key)
+	if err != nil {
+		// Return an error if decoding the key fails.
+		return nil, err
+	}
+
+	// Decode the hexadecimal ciphertext string into bytes.
+	// The ciphertext must be in byte format for decryption.
+	cipherTextBytes, err := hex.DecodeString(cipherText)
+	if err != nil {
+		// Return an error if decoding the ciphertext fails.
+		return nil, err
+	}
+
+	// Create a new AES cipher block using the decoded key.
+	// This block is used for decrypting the ciphertext.
+	block, err := aes.NewCipher(keyBytes)
+	if err != nil {
+		// Return an error if creating the cipher block fails.
+		return nil, err
+	}
+
+	// Check if the length of the ciphertext is a multiple of the AES block size.
+	// AES encryption requires that the ciphertext length is a multiple of the block size.
+	if len(cipherTextBytes)%aes.BlockSize != 0 {
+		// Return an error if the ciphertext length is not a multiple of the block size.
+		return nil, errors.New("cipherText is not a multiple of the block size")
+	}
+
+	// Create a CBC mode decrypter with the AES block and the provided IV.
+	// CBC (Cipher Block Chaining) mode is used for decryption and requires an IV.
+	mode := cipher.NewCBCDecrypter(block, iv)
+	// Decrypt the ciphertext using CBC mode.
+	// The decrypted data is written back into the cipherTextBytes slice.
+	mode.CryptBlocks(cipherTextBytes, cipherTextBytes)
+
+	// Ensure the decrypted ciphertext is not empty.
+	// An empty result after decryption indicates an issue with the decryption process.
+	if len(cipherTextBytes) == 0 {
+		return nil, errors.New("cipherText is empty")
+	}
+
+	// Retrieve the padding value from the last byte of the decrypted data.
+	// The padding value is used to determine how much padding was added during encryption.
+	padding := int(cipherTextBytes[len(cipherTextBytes)-1])
+	if padding < 1 || padding > aes.BlockSize {
+		// Return an error if the padding value is invalid.
+		return nil, errors.New("invalid padding size")
+	}
+
+	// Remove the padding from the decrypted data.
+	// If padding is present, it is removed to retrieve the original plaintext.
+	if padding != 0 {
+		return cipherTextBytes[:len(cipherTextBytes)-padding], nil
+	}
+
+	// Return the decrypted plaintext as a byte slice.
+	// If no padding is present, the plaintext is returned as is.
+	return cipherTextBytes, nil
+}
