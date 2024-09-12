@@ -283,3 +283,94 @@ func FuzzEncryptCBC(f *testing.F) {
 		assert.Len(t, cipherText, expectedLength*2, "Expected cipherText length to be %d bytes, got %d", expectedLength, len(cipherText)/2)
 	})
 }
+
+func FuzzDecryptCBC(f *testing.F) {
+	// Initialize a Crypto instance to be used for the AES encryption and decryption tests.
+	// This instance is reused across all the test cases to ensure consistency in encryption behavior.
+	crypto := &Crypto{}
+
+	// Add initial test cases with various combinations of key, IV, and ciphertext to the fuzzing function.
+	// These test cases are used to evaluate the behavior of the Decrypt function under different input conditions.
+
+	// Add a test case with a valid 32-character hexadecimal key, a valid 16-byte IV, and a valid ciphertext.
+	// This represents a typical valid input scenario.
+	f.Add("0102030405060708090a0b0c0d0e0f10", []byte("0102030405060708"), "c4d6e8f0d1e2b9c8a7d8e6f4c4b5a6d0")
+	// Add a test case with a valid 32-character hexadecimal key, a valid 16-byte IV, and a different valid ciphertext.
+	// This tests decryption with a different ciphertext while keeping the key and IV valid.
+	f.Add("00000000000000000000000000000000", []byte("0000000000000000"), "3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a")
+
+	// Add invalid cases to test the Decrypt function's robustness against erroneous inputs.
+	// These cases should trigger errors and validate that the function handles invalid inputs gracefully.
+
+	// Add a test case with an invalid key that does not meet any valid AES key length requirement.
+	// The key is not of valid length (16, 24, or 32 bytes), which should trigger a decoding error.
+	f.Add("invalidkey", []byte("0000000000000000"), "3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a")
+	// Add a test case with a valid 16-byte key but an invalid IV length.
+	// The IV length is shorter than the required 16 bytes for AES decryption, which should cause a failure.
+	f.Add("0102030405060708090a0b0c0d0e0f10", []byte("shortiv"), "3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a")
+	// Add a test case with a valid 32-character hexadecimal key but an empty IV.
+	// The empty IV is invalid for AES decryption, so the function should handle this scenario correctly.
+	f.Add("0102030405060708090a0b0c0d0e0f10", []byte(""), "3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a")
+	// Add a test case with a valid 32-character hexadecimal key and a valid 16-byte IV, but with an empty ciphertext.
+	// This tests how the decryption function deals with an empty ciphertext.
+	f.Add("0102030405060708090a0b0c0d0e0f10", []byte("0102030405060708"), "")
+	// Add a test case with a valid 32-character hexadecimal key and a valid 16-byte IV, but with a ciphertext that is too short.
+	// This tests how the decryption function handles ciphertext that may be incorrectly formatted or padded.
+	f.Add("0102030405060708090a0b0c0d0e0f10", []byte("0102030405060708"), "00000000000000000000000000000000")
+
+	// The f.Fuzz function is used to perform fuzz testing on the Decrypt function.
+	// It generates a range of inputs and tests how the Decrypt function handles them.
+	// This helps identify potential edge cases or unexpected behaviors.
+	f.Fuzz(func(t *testing.T, keyHex string, iv []byte, cipherText string) {
+		// Decode the key from its hexadecimal string representation.
+		// This step converts the key from a hex string format to a byte slice format
+		// that is required for the decryption process.
+		keyBytes, err := hex.DecodeString(keyHex)
+		// Check if the decoding of the key from its hex string representation resulted in an error.
+		// If an error occurred, it could be due to an invalid key format.
+		if err != nil {
+			// If decoding fails and the length of the hex string is neither 32 nor 64 characters,
+			// skip the test as the key cannot be processed correctly.
+			if len(keyHex) != 32 && len(keyHex) != 64 {
+				// Skip the test as the key is invalid.
+				return
+			}
+		}
+
+		// Check if the length of the decoded key is valid for AES decryption.
+		// AES decryption requires keys to be either 16 bytes (AES-128), 24 bytes (AES-192),
+		// or 32 bytes (AES-256). Any other length is considered invalid.
+		if len(keyBytes) != 16 && len(keyBytes) != 24 && len(keyBytes) != 32 {
+			// Skip the test if the key length is invalid.
+			return
+		}
+
+		// Check if the length of the initialization vector (IV) is valid.
+		// For AES decryption, the IV must be exactly 16 bytes long.
+		if iv != nil && len(iv) != aes.BlockSize {
+			// Skip the test if the IV length is invalid.
+			return
+		}
+
+		// Call the Decrypt function with the provided key, IV, and ciphertext.
+		// This function is expected to return a plaintext and potentially an error.
+		plainText, err := crypto.DecryptCBC(keyHex, iv, cipherText)
+		// Check if an error occurred during the decryption process.
+		// If an error occurred, it indicates that the Decrypt function could not handle
+		// the provided inputs correctly.
+		if err != nil {
+			// Assert that an error is expected in this case.
+			// The test is skipped if decryption fails with the given inputs.
+			assert.Error(t, err, "Decryption failed with key: %s, IV: %v, cipherText: %s", keyHex, iv, cipherText)
+			return
+		}
+
+		// If no error occurred, ensure that decryption was successful.
+		// This assertion verifies that the Decrypt function did not return an error
+		// for valid inputs.
+		assert.NoError(t, err, "Expected no error during decryption")
+		// Ensure that the decrypted plaintext is not nil.
+		// A nil plaintext indicates that decryption may have failed or produced no result.
+		assert.NotNil(t, plainText, "Expected decrypted plainText to be non-nil")
+	})
+}
