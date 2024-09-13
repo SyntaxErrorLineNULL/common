@@ -78,7 +78,7 @@ func (srv *Crypto) DecryptCBC(key string, iv []byte, cipherText string) ([]byte,
 	// Check for empty key, IV, or ciphertext and return an appropriate error message.
 	// These checks ensure that all required inputs are provided before attempting decryption.
 	switch {
-	case key == "", len(iv) == 0, len(cipherText) == 0:
+	case key == "", len(iv) == 0, cipherText == "":
 		return nil, errors.New("key, IV block, or cipherText is empty")
 	}
 
