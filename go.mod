@@ -1,4 +1,4 @@
-module common
+module github.com/SyntaxErrorLineNULL/common
 
 go 1.22
 
