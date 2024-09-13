@@ -1,10 +1,10 @@
 package slices
 
 import (
-	"common/test"
 	"sort"
 	"testing"
 
+	"github.com/SyntaxErrorLineNULL/common/test"
 	"github.com/stretchr/testify/assert"
 )
 
