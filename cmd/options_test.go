@@ -36,4 +36,23 @@ func TestOptions(t *testing.T) {
 		// in the Options instance, making it available for future use.
 		assert.Equal(t, ctx, options.parentCtx, "Expected parentCtx to be set to the provided context")
 	})
+
+	// SetEmptyContext tests the behavior of the SetContext method when a nil context
+	// is provided. The test ensures that the method returns an appropriate error when
+	// attempting to set a nil context, which is considered invalid. This is important
+	// because the method should not accept a nil context and must handle this case correctly.
+	t.Run("SetEmptyContext", func(t *testing.T) {
+		// Initialize a new Options instance. This struct will be used to test
+		// the SetContext method and verify that it correctly handles a nil context.
+		options := &Options{}
+
+		// Call the SetContext method, passing a nil context.
+		// Since nil is not a valid context, the method should return an error.
+		err := options.SetContext(nil)
+
+		// Assert that an error was returned by the SetContext method.
+		// This check ensures that the method correctly identifies the nil context
+		// as invalid and responds by returning an appropriate error.
+		assert.Error(t, err, "Expected an error when setting a nil context")
+	})
 }
