@@ -82,4 +82,26 @@ func TestOptions(t *testing.T) {
 		// and responds by returning an appropriate error.
 		assert.Error(t, err, "Expected an error when setting a closed done channel")
 	})
+
+	// SetDoneChannel tests the behavior of the SetDoneChannel method when
+	// a valid channel is provided. The test ensures that the method successfully
+	// assigns the provided channel to the Options instance, allowing it to be
+	// used for signaling task completion or termination.
+	t.Run("SetDoneChannel", func(t *testing.T) {
+		// Initialize a new Options instance. This struct will be used to test
+		// the SetDoneChannel method and verify its behavior with a valid channel.
+		options := &Options{}
+
+		// Create a channel of type struct{} to be used as the "done" channel.
+		// This channel will be used to signal completion or termination.
+		doneCh := make(chan struct{})
+
+		// Call the SetDoneChannel method, passing the newly created channel.
+		// Since the channel is valid and open, the method should succeed without errors.
+		err := options.SetDoneChannel(doneCh)
+		// Assert that no error was returned by the SetDoneChannel method.
+		// This check ensures that the method successfully assigned the channel
+		// without encountering any issues.
+		assert.NoError(t, err, "Expected no error when setting a valid done channel")
+	})
 }
