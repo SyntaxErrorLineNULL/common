@@ -55,4 +55,31 @@ func TestOptions(t *testing.T) {
 		// as invalid and responds by returning an appropriate error.
 		assert.Error(t, err, "Expected an error when setting a nil context")
 	})
+
+	// SetCloseDoneChannel tests the behavior of the SetDoneChannel method when
+	// attempting to set a channel that is already closed. The test ensures that
+	// the method correctly identifies the closed channel and returns an appropriate
+	// error. This is important for ensuring that the Options instance does not
+	// operate on an invalid channel, which could lead to unexpected behavior.
+	t.Run("SetCloseDoneChannel", func(t *testing.T) {
+		// Initialize a new Options instance. This struct will be used to test
+		// the SetDoneChannel method and verify its behavior with a closed channel.
+		options := &Options{}
+
+		// Create a channel of type struct{} to be used as the "done" channel.
+		// This channel will be used to signal completion or termination.
+		doneCh := make(chan struct{})
+
+		// Close the done channel to simulate a scenario where the channel is already closed.
+		// This tests how the SetDoneChannel method handles the situation when an attempt is made to set a closed channel.
+		close(doneCh)
+
+		// Call the SetDoneChannel method, passing the closed channel.
+		// Since the channel is closed, the method should return an error.
+		err := options.SetDoneChannel(doneCh)
+		// Assert that an error was returned by the SetDoneChannel method.
+		// This check ensures that the method correctly identifies the closed channel
+		// and responds by returning an appropriate error.
+		assert.Error(t, err, "Expected an error when setting a closed done channel")
+	})
 }
