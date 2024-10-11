@@ -6,10 +6,14 @@ import (
 )
 
 type Options struct {
-	ctx    context.Context
-	doneCh chan struct{}
+	parentCtx context.Context
+	doneCh    chan struct{}
 }
 
+// SetContext assigns the provided context to the Options instance. This allows the context to be
+// used for controlling operations within the command execution, such as handling cancellations
+// or timeouts. The method ensures that the context is valid (non-nil) before assigning it,
+// returning an error if an invalid context is provided.
 func (o *Options) SetContext(ctx context.Context) error {
 	// Check if the provided context is nil. A nil context is invalid and
 	// should not be used. Return an error in this case.
@@ -17,13 +21,20 @@ func (o *Options) SetContext(ctx context.Context) error {
 		return errors.New("context cannot be nil")
 	}
 
-	// Assign the provided valid context to the task's parentCtx field.
-	o.ctx = ctx
+	// Set the valid context to the parentCtx field of the Options instance.
+	// This will allow any tasks that rely on the Options to use the provided context
+	// for operations like cancellation or timeouts.
+	o.parentCtx = ctx
 
 	// Return nil to indicate that the context was successfully set.
 	return nil
 }
 
+// SetDoneChannel assigns a done signal channel to the Options instance. This channel is used
+// for signaling the completion of certain operations. The method first checks if the provided
+// channel is valid (non-nil) and not already closed, returning an error if either condition is
+// not met. If valid, the channel is assigned to the Options instance for future use in signaling
+// when operations are completed.
 func (o *Options) SetDoneChannel(doneCh chan struct{}) error {
 	// Check if the provided channel is nil. A nil channel is invalid and
 	// cannot be used, so return an error in this case.
