@@ -6,7 +6,18 @@ import (
 	"io"
 )
 
+var ErrEmptyCommandArgs = errors.New("name or args is empty")
+
 type Options struct {
+	// Command specifies the actual command to execute.
+	// This can be a path to an executable or a command string with arguments.
+	// If arguments are included in the command string, they are automatically parsed.
+	Command string
+	// Args holds the command-line arguments for the executable.
+	// These arguments are passed to the command when it is executed.
+	// If the Command field already includes arguments, this field is ignored.
+	Args []string
+
 	parentCtx context.Context
 	doneCh    chan struct{}
 	// stdInPipeReader provides a way to connect an input stream to the command's stdin.
@@ -17,11 +28,43 @@ type Options struct {
 	stdOutPipeWriter io.WriteCloser
 }
 
+// SetNameAndArgs sets the command name and its arguments in the Options instance.
+// It validates the inputs to ensure that the command name is not empty
+// and that at least one argument is provided. If the inputs are valid,
+// the method updates the Options instance and returns nil; otherwise,
+// it returns an error indicating that the command name or arguments are empty.
+func (opts *Options) SetNameAndArgs(commandName string, args []string) error {
+	// Check if the command name is empty.
+	// An empty command name indicates that no command is specified,
+	// which is invalid for setting command options.
+	if commandName == "" || len(args) == 0 {
+		// Return an error indicating that command arguments are empty.
+		// This error will be used by the calling function to handle
+		// the scenario where valid command inputs are required.
+		return ErrEmptyCommandArgs
+	}
+
+	// Set the Command field of the Options instance to the provided command name.
+	// This updates the internal state of the Options instance
+	// to reflect the command that should be executed later.
+	opts.Command = commandName
+
+	// Set the Args field of the Options instance to the provided arguments slice.
+	// This stores the arguments that will be passed to the command
+	// when it is executed, allowing for flexible command execution.
+	opts.Args = args
+
+	// Return nil to indicate that the operation was successful.
+	// This signifies to the calling function that both the command name
+	// and arguments have been set correctly, allowing further processing.
+	return nil
+}
+
 // SetContext assigns the provided context to the Options instance. This allows the context to be
 // used for controlling operations within the command execution, such as handling cancellations
 // or timeouts. The method ensures that the context is valid (non-nil) before assigning it,
 // returning an error if an invalid context is provided.
-func (o *Options) SetContext(ctx context.Context) error {
+func (opts *Options) SetContext(ctx context.Context) error {
 	// Check if the provided context is nil. A nil context is invalid and
 	// should not be used. Return an error in this case.
 	if ctx == nil {
@@ -31,7 +74,7 @@ func (o *Options) SetContext(ctx context.Context) error {
 	// Set the valid context to the parentCtx field of the Options instance.
 	// This will allow any tasks that rely on the Options to use the provided context
 	// for operations like cancellation or timeouts.
-	o.parentCtx = ctx
+	opts.parentCtx = ctx
 
 	// Return nil to indicate that the context was successfully set.
 	return nil
@@ -42,7 +85,7 @@ func (o *Options) SetContext(ctx context.Context) error {
 // channel is valid (non-nil) and not already closed, returning an error if either condition is
 // not met. If valid, the channel is assigned to the Options instance for future use in signaling
 // when operations are completed.
-func (o *Options) SetDoneChannel(doneCh chan struct{}) error {
+func (opts *Options) SetDoneChannel(doneCh chan struct{}) error {
 	// Check if the provided channel is nil. A nil channel is invalid and
 	// cannot be used, so return an error in this case.
 	if doneCh == nil {
@@ -64,7 +107,7 @@ func (o *Options) SetDoneChannel(doneCh chan struct{}) error {
 
 	// Assign the provided open channel to the task's doneCh field. This allows
 	// the task to later use this channel for signaling that it is done.
-	o.doneCh = doneCh
+	opts.doneCh = doneCh
 
 	// Return nil to indicate that the channel was successfully set.
 	return nil
@@ -73,7 +116,7 @@ func (o *Options) SetDoneChannel(doneCh chan struct{}) error {
 // WithPipe sets up pipe connections for standard input and output streams.
 // This method returns a writer for the input pipe and a reader for the output pipe, allowing communication between processes
 // through pipes. Pipes are used to simulate stdin and stdout streams, often for inter-process communication.
-func (o *Options) WithPipe() (*io.PipeWriter, *io.PipeReader) {
+func (opts *Options) WithPipe() (*io.PipeWriter, *io.PipeReader) {
 	// Create a new pipe that consists of a reader and a writer for the input stream.
 	// `io.Pipe()` sets up an in-memory pipe where one side writes to it and the other reads from it.
 	inputPipeReader, inputPipeWriter := io.Pipe()
@@ -81,7 +124,7 @@ func (o *Options) WithPipe() (*io.PipeWriter, *io.PipeReader) {
 	// Assign the input pipe reader to the `stdInPipeReader` field of the `Options` struct.
 	// This allows the `Options` struct to hold a reference to the input side of the pipe,
 	// which can later be used to simulate or manage stdin in a process.
-	o.stdInPipeReader = inputPipeReader
+	opts.stdInPipeReader = inputPipeReader
 
 	// Create another pipe that consists of a reader and a writer for the output stream.
 	// This will allow output from a process to be captured by reading from the pipe.
@@ -89,7 +132,7 @@ func (o *Options) WithPipe() (*io.PipeWriter, *io.PipeReader) {
 
 	// Assign the output pipe writer to the `stdOutPipeWriter` field of the `Options` struct.
 	// This will be used to write the standard output of the process to the pipe, where it can be read later.
-	o.stdOutPipeWriter = outputPipeWriter
+	opts.stdOutPipeWriter = outputPipeWriter
 
 	// Return the writer for the input pipe and the reader for the output pipe.
 	// These will be used for writing data into the input and reading data from the output, respectively,
