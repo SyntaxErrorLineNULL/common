@@ -10,3 +10,7 @@ type Commander struct {
 func NewCommander() *Commander {
 	return &Commander{}
 }
+
+func (cm *Commander) Invoke(options *Options) {
+
+}
