@@ -104,4 +104,41 @@ func TestOptions(t *testing.T) {
 		// without encountering any issues.
 		assert.NoError(t, err, "Expected no error when setting a valid done channel")
 	})
+
+	// WithPipe ensures that the WithPipe method of the Options struct correctly sets up
+	// input and output pipes. This test checks that the method properly initializes pipe
+	// readers and writers, and assigns them to the struct's fields. The test verifies that
+	// all returned values and internal fields are correctly initialized and not nil, ensuring
+	// that the pipes are set up for further I/O operations.
+	t.Run("WithPipe", func(t *testing.T) {
+		// Initialize a new Options instance for testing.
+		// This instance will be used to call the WithPipe method and validate
+		// that the pipes for input and output are created and assigned correctly.
+		options := &Options{}
+
+		// Call the WithPipe method, which creates a new input pipe and an output pipe.
+		// It returns a writer for the input side and a reader for the output side.
+		// These pipes are used to simulate standard input and output streams.
+		writer, reader := options.WithPipe()
+
+		// Assert that the writer returned by the WithPipe method is not nil.
+		// This confirms that the input pipe writer has been successfully created
+		// and is ready to accept input data for writing.
+		assert.NotNil(t, writer, "Input pipe writer should not be nil")
+
+		// Assert that the reader returned by the WithPipe method is not nil.
+		// This ensures that the output pipe reader has been correctly created
+		// and can be used to read output data from the pipe.
+		assert.NotNil(t, reader, "Output pipe reader should not be nil")
+
+		// Assert that the stdOutPipeWriter field of the options struct is not nil.
+		// This checks that the output pipe writer has been assigned to the correct
+		// struct field, confirming that the method has set up the internal pipe state.
+		assert.NotNil(t, options.stdOutPipeWriter, "Stdout pipe writer should be initialized")
+
+		// Assert that the stdInPipeReader field of the options struct is not nil.
+		// This verifies that the input pipe reader has been assigned properly,
+		// ensuring that the input side of the pipe is ready for reading operations.
+		assert.NotNil(t, options.stdInPipeReader, "Stdin pipe reader should be initialized")
+	})
 }
