@@ -3,11 +3,18 @@ package cmd
 import (
 	"context"
 	"errors"
+	"io"
 )
 
 type Options struct {
 	parentCtx context.Context
 	doneCh    chan struct{}
+	// stdInPipeReader provides a way to connect an input stream to the command's stdin.
+	// This allows feeding input to the command during its execution.
+	stdInPipeReader io.ReadCloser
+	// stdOutPipeWriter captures the command's standard output.
+	// This allows the output to be redirected, stored, or processed by the application.
+	stdOutPipeWriter io.WriteCloser
 }
 
 // SetContext assigns the provided context to the Options instance. This allows the context to be
@@ -61,4 +68,31 @@ func (o *Options) SetDoneChannel(doneCh chan struct{}) error {
 
 	// Return nil to indicate that the channel was successfully set.
 	return nil
+}
+
+// WithPipe sets up pipe connections for standard input and output streams.
+// This method returns a writer for the input pipe and a reader for the output pipe, allowing communication between processes
+// through pipes. Pipes are used to simulate stdin and stdout streams, often for inter-process communication.
+func (o *Options) WithPipe() (*io.PipeWriter, *io.PipeReader) {
+	// Create a new pipe that consists of a reader and a writer for the input stream.
+	// `io.Pipe()` sets up an in-memory pipe where one side writes to it and the other reads from it.
+	inputPipeReader, inputPipeWriter := io.Pipe()
+
+	// Assign the input pipe reader to the `stdInPipeReader` field of the `Options` struct.
+	// This allows the `Options` struct to hold a reference to the input side of the pipe,
+	// which can later be used to simulate or manage stdin in a process.
+	o.stdInPipeReader = inputPipeReader
+
+	// Create another pipe that consists of a reader and a writer for the output stream.
+	// This will allow output from a process to be captured by reading from the pipe.
+	outputPipeReader, outputPipeWriter := io.Pipe()
+
+	// Assign the output pipe writer to the `stdOutPipeWriter` field of the `Options` struct.
+	// This will be used to write the standard output of the process to the pipe, where it can be read later.
+	o.stdOutPipeWriter = outputPipeWriter
+
+	// Return the writer for the input pipe and the reader for the output pipe.
+	// These will be used for writing data into the input and reading data from the output, respectively,
+	// providing a way to send data into the process and capture its output.
+	return inputPipeWriter, outputPipeReader
 }
