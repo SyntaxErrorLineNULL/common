@@ -23,6 +23,9 @@ type Options struct {
 	// stdOutBuffer is an optional writer where a copy of the command's standard output is sent.
 	// This allows real-time processing or logging of the output while the command is running.
 	stdOutBuffer io.Writer
+	// stdErrBuffer is an optional writer where a copy of the command's standard error output is sent.
+	// Similar to StdOutBuf, this allows real-time error monitoring or logging.
+	stdErrBuffer io.Writer
 	// stdInPipeReader provides a way to connect an input stream to the command's stdin.
 	// This allows feeding input to the command during its execution.
 	stdInPipeReader io.ReadCloser
@@ -161,5 +164,27 @@ func (opts *Options) WithStdOutBuffer(buf io.Writer) error {
 
 	// Return nil to indicate that the operation was successful and no errors were encountered.
 	// The `Options` instance is now configured with the specified output buffer.
+	return nil
+}
+
+// WithStdErrBuffer sets the output buffer for standard error in the `Options` instance.
+// This method allows redirecting the standard error stream to the provided `io.Writer` buffer,
+// which could be useful for capturing error messages.
+func (opts *Options) WithStdErrBuffer(buf io.Writer) error {
+	// Check if the provided buffer is `nil`. If the buffer is `nil`, it means no valid
+	// `io.Writer` was provided, and the error stream cannot be redirected to an invalid destination.
+	if buf == nil {
+		// Return an error indicating that the writer is empty.
+		// This helps signal to the caller that a valid `io.Writer` must be provided.
+		return errors.New("writer is empty")
+	}
+
+	// Set the provided `io.Writer` as the standard error buffer for the `Options` instance.
+	// This assigns the `stdErrBuffer` field to the buffer, allowing any standard error
+	// messages to be written to the given buffer instead of the default error output.
+	opts.stdErrBuffer = buf
+
+	// Return `nil` to signal that the buffer was successfully assigned and the operation
+	// was successful. No errors occurred, and the error stream can now be captured by the buffer.
 	return nil
 }
