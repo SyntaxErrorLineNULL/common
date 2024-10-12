@@ -20,6 +20,9 @@ type Options struct {
 
 	parentCtx context.Context
 	doneCh    chan struct{}
+	// stdOutBuffer is an optional writer where a copy of the command's standard output is sent.
+	// This allows real-time processing or logging of the output while the command is running.
+	stdOutBuffer io.Writer
 	// stdInPipeReader provides a way to connect an input stream to the command's stdin.
 	// This allows feeding input to the command during its execution.
 	stdInPipeReader io.ReadCloser
@@ -138,4 +141,25 @@ func (opts *Options) WithPipe() (*io.PipeWriter, *io.PipeReader) {
 	// These will be used for writing data into the input and reading data from the output, respectively,
 	// providing a way to send data into the process and capture its output.
 	return inputPipeWriter, outputPipeReader
+}
+
+// WithStdOutBuffer sets the output buffer for standard output in the `Options` instance.
+// This method allows redirection of standard output to the provided `io.Writer` buffer,
+// which could be used for various operations such as capturing output or processing data streams.
+func (opts *Options) WithStdOutBuffer(buf io.Writer) error {
+	// Check if the provided buffer is nil, which would indicate that no valid writer was passed.
+	// If `buf` is nil, the function returns an error to prevent setting an invalid output destination.
+	if buf == nil {
+		// Return an error indicating that the writer is empty.
+		// This helps signal to the caller that a valid `io.Writer` must be provided.
+		return errors.New("writer is empty")
+	}
+
+	// Assign the provided `io.Writer` to the `stdOutBuffer` field of the `Options` instance.
+	// This sets the custom output destination for future operations that rely on this buffer.
+	opts.stdOutBuffer = buf
+
+	// Return nil to indicate that the operation was successful and no errors were encountered.
+	// The `Options` instance is now configured with the specified output buffer.
+	return nil
 }
