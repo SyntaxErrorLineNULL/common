@@ -20,12 +20,19 @@ type Options struct {
 
 	parentCtx context.Context
 	doneCh    chan struct{}
+
+	StdioBuffer bool
+
 	// stdOutBuffer is an optional writer where a copy of the command's standard output is sent.
 	// This allows real-time processing or logging of the output while the command is running.
 	stdOutBuffer io.Writer
 	// stdErrBuffer is an optional writer where a copy of the command's standard error output is sent.
 	// Similar to StdOutBuf, this allows real-time error monitoring or logging.
 	stdErrBuffer io.Writer
+	// stdIn connects a reader to the command's stdin, allowing external input
+	// to be fed into the command during its execution.
+	stdIn io.Reader
+
 	// stdInPipeReader provides a way to connect an input stream to the command's stdin.
 	// This allows feeding input to the command during its execution.
 	stdInPipeReader io.ReadCloser
@@ -186,5 +193,24 @@ func (opts *Options) WithStdErrBuffer(buf io.Writer) error {
 
 	// Return `nil` to signal that the buffer was successfully assigned and the operation
 	// was successful. No errors occurred, and the error stream can now be captured by the buffer.
+	return nil
+}
+
+func (opts *Options) WithStdInput(in io.Reader) error {
+	// Check if the provided reader in is nil. If the reader is nil, it means no valid
+	// input source was provided, and the input stream cannot be redirected to an invalid source.
+	if in == nil {
+		// Return an error indicating that the reader (input source) is empty.
+		// This informs the caller that a valid io.Reader must be provided to handle input properly.
+		return errors.New("reader is empty")
+	}
+
+	// Set the provided `io.Reader` as the standard input for the `Options` instance.
+	// This assigns the `stdIn` field to the reader, allowing the program to read input from
+	// the given source instead of the default input (such as the keyboard or standard input stream).
+	opts.stdIn = in
+
+	// Return `nil` to indicate that the reader was successfully assigned and the operation was successful.
+	// No errors occurred, and the input stream can now be read from the specified `io.Reader`.
 	return nil
 }
