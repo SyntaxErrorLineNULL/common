@@ -8,8 +8,8 @@ import (
 
 type Request struct {
 	URL    *url.URL
+	Header *http.Header
 	Method string
-	Header http.Header
 	Body   io.Reader
 }
 

@@ -21,39 +21,39 @@ func TestSetHeaders(t *testing.T) {
 	// to ensure the SetHeaders method functions correctly across different inputs and expected outcomes.
 	cases := []struct {
 		name            string
-		initialHeaders  http.Header
+		initialHeaders  *http.Header
 		headersToSet    map[string]string
-		expectedHeaders http.Header
+		expectedHeaders *http.Header
 	}{
 		{
 			name:           "Set multiple headers",
-			initialHeaders: http.Header{},
+			initialHeaders: &http.Header{},
 			headersToSet: map[string]string{
 				"Content-Type": "application/json",
 				"User-Agent":   "GoTest",
 			},
-			expectedHeaders: http.Header{
+			expectedHeaders: &http.Header{
 				"Content-Type": []string{"application/json"},
 				"User-Agent":   []string{"GoTest"},
 			},
 		},
 		{
 			name: "Replace existing header",
-			initialHeaders: http.Header{
+			initialHeaders: &http.Header{
 				"Content-Type": []string{"text/plain"},
 			},
 			headersToSet: map[string]string{
 				"Content-Type": "application/json",
 			},
-			expectedHeaders: http.Header{
+			expectedHeaders: &http.Header{
 				"Content-Type": []string{"application/json"},
 			},
 		},
 		{
 			name:            "Set no headers",
-			initialHeaders:  http.Header{},
+			initialHeaders:  &http.Header{},
 			headersToSet:    map[string]string{},
-			expectedHeaders: http.Header{},
+			expectedHeaders: &http.Header{},
 		},
 	}
 
