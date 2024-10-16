@@ -7,10 +7,11 @@ import (
 )
 
 type Request struct {
-	URL    *url.URL
-	Header *http.Header
-	Method string
-	Body   io.Reader
+	RequestID string
+	URL       *url.URL
+	Header    *http.Header
+	Method    string
+	Body      io.Reader
 }
 
 // SetHeaders is a method that allows setting multiple headers for an HTTP request.
