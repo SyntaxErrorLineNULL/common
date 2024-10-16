@@ -86,3 +86,69 @@ func TestSetHeaders(t *testing.T) {
 		})
 	}
 }
+
+// TestSetMethod verifies the functionality of the SetMethod method in the Request struct.
+// The test ensures that the method correctly sets valid HTTP methods and handles invalid inputs.
+// It utilizes a set of predefined cases to cover various scenarios, including valid methods (GET, POST, DELETE)
+// and an invalid method, which should result in an error. By asserting the final state of the Method field
+// against the expected outcomes, the test confirms that the SetMethod method behaves as intended
+// and enforces proper validation of HTTP methods within the Request object.
+func TestSetMethod(t *testing.T) {
+	// Define a slice of test cases for the SetMethod function.
+	// Each test case is represented by an anonymous struct that includes
+	// a name to identify the specific scenario being tested,
+	// the HTTP method to be set on the Request object during the test,
+	// a boolean indicating whether an error is expected when setting the method,
+	// and the expected value of the Method field in the Request object after the method call.
+	cases := []struct {
+		name      string
+		method    string
+		expectErr bool
+		expected  string
+	}{
+		{"Valid GET Method", "GET", false, "GET"},
+		{"Valid POST Method", "POST", false, "POST"},
+		{"Invalid Method", "INVALID", true, ""},
+		{"Valid DELETE Method", "delete", false, "DELETE"},
+	}
+
+	// Iterate over each test case defined in the `cases` slice.
+	// Each test case is represented by `tt`, which contains the method to set,
+	// the expected outcome, and whether an error is anticipated.
+	for _, tt := range cases {
+		// Each test case in `cases` is executed within this loop.
+		// The `t.Run` function allows the execution of subtests, providing
+		// descriptive names for each test case, making it easier to identify results.
+		t.Run(tt.name, func(t *testing.T) {
+			// Create a new instance of the Request struct,
+			// initializing its Header field with a pointer to a new http.Header object.
+			// This sets up a fresh Request object that can be used for testing,
+			// ensuring that there are no pre-existing headers that could affect the outcome.
+			req := &Request{Header: &http.Header{}}
+			// Call the SetMethod method on the Request object, passing in the HTTP method
+			// specified in the current test case represented by `tt.method`.
+			// The purpose of this call is to test whether the method can be set correctly
+			// and to verify if any errors occur based on the validity of the provided method.
+			err := req.SetMethod(tt.method)
+
+			// Check if the current test case expects an error to occur.
+			// This conditional evaluates the boolean field `expectErr` from the test case struct,
+			// which indicates whether the invocation of the method should result in an error or not.
+			if tt.expectErr {
+				// If an error is expected, assert that an error was indeed returned by the method call.
+				// The assert.Error function checks that the error variable is not nil,
+				// which confirms that the method behaved as intended by signaling an invalid operation.
+				assert.Error(t, err)
+			} else {
+				// If no error is expected, assert that the error variable is nil, indicating success.
+				// The assert.NoError function checks that the error is nil,
+				// ensuring that the method call completed without encountering issues.
+				assert.NoError(t, err)
+				// Verify that the Method field in the Request object matches the expected value.
+				// The assert.Equal function checks if the value of `req.Method` equals `tt.expected`,
+				// which was predefined in the test case, confirming that the method was set correctly.
+				assert.Equal(t, tt.expected, req.Method)
+			}
+		})
+	}
+}
