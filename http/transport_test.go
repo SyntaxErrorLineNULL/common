@@ -178,3 +178,118 @@ func TestRateLimiterContextCancellation(t *testing.T) {
 	// If no error is returned, the test will fail, signaling an issue with handling the cancellation.
 	assert.Error(t, err, "Expected an error due to context cancellation")
 }
+
+// TestRateLimiterDeniesRequest tests the behavior of the RoundTripRateLimiterTransport
+// when requests exceed the configured rate limit. The test simulates sending two consecutive
+// HTTP requests to a server: the first request is expected to succeed, while the second request
+// is expected to be denied due to rate limiting. The second request includes a timeout,
+// simulating a scenario where the rate limit delay prevents the request from being processed
+// within the allotted time. The test verifies that the client returns an error for the second request
+// and does not provide a valid response, ensuring that the rate limiting mechanism works as expected.
+func TestRateLimiterDeniesRequest(t *testing.T) {
+	// Create a new test HTTP server that simulates a real server.
+	// The `httptest.NewServer` function starts a server and returns a handler that can respond to HTTP requests.
+	// It is useful for testing HTTP clients without needing to rely on an actual external server.
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Write an HTTP 200 OK status to the response.
+		// This indicates to the client that the request was successful.
+		w.WriteHeader(http.StatusOK)
+	}))
+
+	// Ensure that the test server is closed after the test completes.
+	// This is important to release any resources associated with the server
+	// and prevent any potential resource leaks during tests.
+	defer server.Close()
+
+	// Create a new instance of a rate-limited transport for handling HTTP requests.
+	// This transport is configured to allow a maximum of 1 request every 1 second.
+	// The `NewRoundTripRateLimiterTransport` function initializes the transport,
+	// wrapping the default HTTP transport with rate limiting capabilities.
+	roundTripRateLimiterTransport := NewRoundTripRateLimiterTransport(1*time.Second, 1, http.DefaultTransport)
+	// Assert that the newly created rate-limited transport is not nil.
+	// This check ensures that the transport was successfully created and initialized,
+	// which is crucial for the subsequent HTTP client to function properly.
+	assert.NotNil(t, roundTripRateLimiterTransport, "Expected roundTripRateLimiterTransport to be initialized and not nil")
+	// Initialize a new HTTP client with the rate-limited transport.
+	// This client will use the previously created `roundTripRateLimiterTransport`
+	// to manage outgoing requests, enforcing the specified rate limits.
+	client := &http.Client{Transport: roundTripRateLimiterTransport}
+
+	// Create a new HTTP GET request with a context for execution.
+	// This request targets the server URL established earlier in the test.
+	// Using context.Background() means that the request will not have any cancellation or timeout associated with it,
+	// allowing it to execute normally unless interrupted by other factors.
+	// The method used for this request is HTTP GET, which is standard for retrieving data from the server.
+	// The body of the request is nil as this is a simple GET request without a payload.
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, server.URL, nil)
+	// Assert that there was no error during the creation of the request.
+	// This check is crucial to confirm that the request was formed correctly before
+	// attempting to send it. If an error occurs, the test will fail with the provided
+	// message, helping to diagnose issues in the request setup.
+	assert.NoError(t, err, "Error creating first request")
+
+	// Send the HTTP request using the configured client.
+	// This executes the request created earlier and waits for the response
+	// from the server. This step is essential for validating the behavior
+	// of the HTTP client and ensuring that the transport layer is functioning
+	// correctly. The response and any potential error from the request are captured.
+	resp, err := client.Do(req)
+	// Assert that there was no error when executing the request.
+	// This check is crucial as any failure at this stage would indicate a problem
+	// in reaching the server or processing the request. The test will fail
+	// with the provided message if an error occurs, assisting in identifying issues.
+	assert.NoError(t, err, "Error making first request")
+	// Assert that the response status code is 200 OK.
+	// This checks if the server successfully processed the request as expected.
+	// If the status code is not OK, the test will fail, indicating that the
+	// server did not handle the request correctly. This is an important
+	// verification step to ensure that the expected outcome aligns with the
+	// actual result of the request.
+	assert.Equal(t, http.StatusOK, resp.StatusCode, "Expected status OK for first request")
+
+	// Create a new cancellable context with a timeout of 500 milliseconds.
+	// This context will be used for operations that should be canceled after the specified duration.
+	// It simulates a scenario where a request might take too long, allowing us to test
+	// how the client handles timeouts and potential failures in its operations.
+	// The `cancel` function will be called to release resources associated with the context
+	// once the operation is complete or if it times out.
+	ctx, cancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
+	// Defer the call to `cancel()` to ensure that resources associated with the context
+	// are cleaned up after the function completes. This is important for preventing
+	// resource leaks, especially in tests where multiple contexts may be created
+	// and need to be properly managed to ensure optimal resource usage.
+	defer cancel()
+
+	// Create a new HTTP GET request with the cancellable context that includes a timeout.
+	// This request is aimed at the server URL established earlier in the test.
+	// By using the context with a timeout, we can simulate scenarios where the request
+	// might not complete in the expected time frame, enabling us to test how the client
+	// handles such situations.
+	// The request will be sent using the HTTP client, and it is important to check for
+	// any errors that may occur during the request creation.
+	req, err = http.NewRequestWithContext(ctx, http.MethodGet, server.URL, nil)
+	// Assert that there was no error during the creation of the second request.
+	// This verification is crucial to ensure that the request was correctly formed before
+	// attempting to send it. If an error occurs, the test will fail with the provided message,
+	// helping to identify issues in the request setup.
+	assert.NoError(t, err, "Error creating second request")
+
+	// Attempt to execute the HTTP request using the HTTP client configured with the rate-limiting transport.
+	// This call sends the previously created request and waits for the response from the server.
+	// Given that the context has a timeout, this request is expected to encounter an error,
+	// particularly because the rate-limited transport may prevent the request from being processed
+	// within the allotted time frame.
+	resp, err = client.Do(req)
+	// Assert that an error was returned when executing the request.
+	// This check verifies that the rate limiting behavior is functioning as expected.
+	// If the request fails due to the enforced rate limit, the test will pass.
+	// If no error is returned, the test will fail with the provided message, indicating
+	// that the rate limiting mechanism did not work as intended.
+	assert.Error(t, err, "Expected error due to rate limiting")
+	// Assert that the response is nil when an error occurs during the request execution.
+	// This verifies that the client does not return a valid response object when an error
+	// is encountered, ensuring the integrity of error handling in the client.
+	// If the response is not nil, the test will fail, highlighting an issue with the
+	// expected behavior under rate limiting conditions.
+	assert.Nil(t, resp, "Expected nil response due to rate limiting")
+}
