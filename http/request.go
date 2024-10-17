@@ -15,6 +15,7 @@ type Request struct {
 	Header    *http.Header
 	Method    string
 	Body      io.Reader
+	Cookies   []*http.Cookie
 }
 
 // SetHeaders is a method that allows setting multiple headers for an HTTP request.
@@ -100,4 +101,19 @@ func (r *Request) SetURL(url *url.URL) error {
 	// Return nil to indicate that the URL was successfully set.
 	// Since no errors occurred, this confirms that the operation completed as expected.
 	return nil
+}
+
+// SetCookie adds one or more cookies to the Request object. This method appends
+// the provided cookies to the existing list of cookies in the Request. It accepts
+// a variadic number of cookies, allowing multiple cookies to be added in a single call.
+// The method returns the modified Request object, enabling method chaining.
+func (r *Request) SetCookie(cookie ...*http.Cookie) *Request {
+	// Append the provided cookies to the current list of cookies in the request.
+	// This ensures that any existing cookies are preserved, and the new ones are
+	// added to the end of the list, maintaining their order.
+	r.Cookies = append(r.Cookies, cookie...)
+
+	// Return the updated Request object. This allows method chaining, so that
+	// multiple setters or methods can be called in sequence on the same Request.
+	return r
 }
