@@ -2,6 +2,7 @@ package http
 
 import (
 	"net/http"
+	"net/url"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -151,4 +152,48 @@ func TestSetMethod(t *testing.T) {
 			}
 		})
 	}
+}
+
+// TestSetURL validates the behavior of the SetURL method in the Request struct.
+// This test ensures that the method correctly sets a valid URL without any errors
+// and that it rejects a nil URL by returning a specific error. It verifies both
+// valid and invalid scenarios, checking that the URL is properly assigned when
+// valid and that an appropriate error is returned for invalid input.
+func TestSetURL(t *testing.T) {
+	// Initialize a new Request object with an empty HTTP header.
+	// This Request object will be used to test the SetURL method, specifically verifying
+	// that the URL can be set correctly without any issues. The empty header setup ensures
+	// that there are no conflicts with the URL setting.
+	req := &Request{Header: &http.Header{}}
+
+	// Parse a valid URL string into a URL object.
+	// This valid URL represents the new value to be assigned to the request.
+	// We use the `url.Parse` function to convert the string into a URL object that can
+	// be passed to the SetURL method for validation and assignment.
+	validURL, _ := url.Parse("https://example.com")
+	// Call the SetURL method to set the parsed URL in the Request.
+	// This action updates the URL field of the Request object with the valid URL.
+	// The method should not return any errors since the input URL is valid.
+	err := req.SetURL(validURL)
+	// Assert that no error was returned when setting the URL.
+	// This ensures that the SetURL method handled the valid URL correctly,
+	// indicating that the method functions as expected when provided with valid input.
+	assert.NoError(t, err, "Expected no error for valid URL")
+	// Assert that the request's URL matches the provided valid URL.
+	// This verifies that the SetURL method correctly updated the request's URL field.
+	// If the two URLs match, it confirms that the method successfully assigned the value.
+	assert.Equal(t, validURL, req.URL, "Expected request URL to match the set URL")
+
+	// Call the SetURL method with a nil URL, simulating invalid input.
+	// Since the URL is nil, the method is expected to return an error,
+	// signaling that a nil value is not allowed for the URL field.
+	err = req.SetURL(nil)
+	// Assert that an error was returned when trying to set a nil URL.
+	// This ensures that the SetURL method properly detects invalid input
+	// and prevents a nil value from being assigned to the request's URL.
+	assert.Error(t, err, "Expected error for nil URL")
+	// Assert that the error message matches the expected value.
+	// This verifies that the method returns a specific error message
+	// indicating that the URL cannot be nil, ensuring clear error reporting.
+	assert.Equal(t, "URL cannot be nil", err.Error(), "Expected specific error message for nil URL")
 }
