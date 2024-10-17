@@ -74,3 +74,30 @@ func (r *Request) SetMethod(method string) error {
 	// This allows the caller to proceed with confidence that the Request object is now in a valid state.
 	return nil
 }
+
+// SetURL sets the URL for the request. This method ensures that the provided URL is not nil.
+// If a nil URL is passed, it returns an error, indicating that the operation cannot proceed.
+// This is important for preventing runtime issues where requests with invalid or nil URLs
+// could cause failures. The method updates the internal URL of the request object upon
+// successful validation of the input.
+func (r *Request) SetURL(url *url.URL) error {
+	// Check if the provided URL is nil.
+	// If it is nil, the method will return an error to ensure that the URL is valid.
+	// This validation is crucial to prevent issues when attempting to send a request
+	// without a valid URL, which could result in a runtime error.
+	if url == nil {
+		// Return an error if the URL is nil.
+		// The error message explicitly states that the URL cannot be nil, making it clear
+		// to the caller what went wrong. This allows for proper handling of the invalid input.
+		return errors.New("URL cannot be nil")
+	}
+
+	// Set the internal URL of the request to the provided valid URL.
+	// This updates the request with the URL that will be used when sending the request.
+	// After this assignment, the request is ready to be sent with the updated URL.
+	r.URL = url
+
+	// Return nil to indicate that the URL was successfully set.
+	// Since no errors occurred, this confirms that the operation completed as expected.
+	return nil
+}
