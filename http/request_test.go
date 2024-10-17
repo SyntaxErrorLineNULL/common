@@ -1,6 +1,7 @@
 package http
 
 import (
+	"fmt"
 	"net/http"
 	"net/url"
 	"testing"
@@ -139,16 +140,16 @@ func TestSetMethod(t *testing.T) {
 				// If an error is expected, assert that an error was indeed returned by the method call.
 				// The assert.Error function checks that the error variable is not nil,
 				// which confirms that the method behaved as intended by signaling an invalid operation.
-				assert.Error(t, err)
+				assert.Error(t, err, fmt.Sprintf("Expected an error for method: %s", tt.method))
 			} else {
 				// If no error is expected, assert that the error variable is nil, indicating success.
 				// The assert.NoError function checks that the error is nil,
 				// ensuring that the method call completed without encountering issues.
-				assert.NoError(t, err)
+				assert.NoError(t, err, fmt.Sprintf("Did not expect an error for method: %s", tt.method))
 				// Verify that the Method field in the Request object matches the expected value.
 				// The assert.Equal function checks if the value of `req.Method` equals `tt.expected`,
 				// which was predefined in the test case, confirming that the method was set correctly.
-				assert.Equal(t, tt.expected, req.Method)
+				assert.Equal(t, tt.expected, req.Method, fmt.Sprintf("Expected method to be set to: %s for method: %s", tt.expected, tt.method))
 			}
 		})
 	}
@@ -196,4 +197,117 @@ func TestSetURL(t *testing.T) {
 	// This verifies that the method returns a specific error message
 	// indicating that the URL cannot be nil, ensuring clear error reporting.
 	assert.Equal(t, "URL cannot be nil", err.Error(), "Expected specific error message for nil URL")
+}
+
+// TestSetCookie verifies the behavior of the SetCookie method in different scenarios.
+// The method is expected to append new cookies to the existing list of cookies in the Request object.
+// The test cases cover scenarios where a single cookie is added, multiple cookies are added,
+// cookies are appended to an existing list, and when no cookies are added. Each test checks
+// that the total number of cookies is correct and that the cookie names match the expected values.
+func TestSetCookie(t *testing.T) {
+	// Define a table of test cases, each with different initial cookies, new cookies to add,
+	// and the expected outcome. The test cases help ensure that the SetCookie method handles
+	// various situations, such as adding single or multiple cookies, appending to existing cookies,
+	// and handling cases where no new cookies are added.
+	cases := []struct {
+		name           string
+		initialCookies []*http.Cookie
+		newCookies     []*http.Cookie
+		expectedCount  int
+		expectedNames  []string
+	}{
+		{
+			name:           "Add single cookie",
+			initialCookies: []*http.Cookie{},
+			newCookies:     []*http.Cookie{{Name: "session_id", Value: "abc123"}},
+			expectedCount:  1,
+			expectedNames:  []string{"session_id"},
+		},
+		{
+			name:           "Add multiple cookies",
+			initialCookies: []*http.Cookie{},
+			newCookies: []*http.Cookie{
+				{Name: "session_id", Value: "abc123"},
+				{Name: "token", Value: "xyz456"},
+			},
+			expectedCount: 2,
+			expectedNames: []string{"session_id", "token"},
+		},
+		{
+			name: "Add cookies to existing ones",
+			initialCookies: []*http.Cookie{
+				{Name: "user_id", Value: "user789"},
+			},
+			newCookies: []*http.Cookie{
+				{Name: "session_id", Value: "abc123"},
+				{Name: "token", Value: "xyz456"},
+			},
+			expectedCount: 3,
+			expectedNames: []string{"user_id", "session_id", "token"},
+		},
+		{
+			name: "No new cookies added",
+			initialCookies: []*http.Cookie{
+				{Name: "user_id", Value: "user789"},
+			},
+			newCookies:    []*http.Cookie{},
+			expectedCount: 1,
+			expectedNames: []string{"user_id"},
+		},
+		{
+			name: "Nil cookies added",
+			initialCookies: []*http.Cookie{
+				{Name: "user_id", Value: "user789"},
+			},
+			newCookies:    nil, // Passing nil cookies
+			expectedCount: 1,   // Should not change the number of cookies
+			expectedNames: []string{"user_id"},
+		},
+	}
+
+	// Iterate over each test case defined in the `cases` slice.
+	// Each test case is represented by `tt`, which contains the specific scenario being tested,
+	// including the initial cookies, new cookies to be added, the expected count of cookies
+	// after the operation, and the expected names of the cookies. This loop facilitates the
+	// execution of all defined test scenarios, ensuring comprehensive coverage of the SetCookie method.
+	for _, tt := range cases {
+		// Each test case defined in `cases` is executed within this loop.
+		// The `t.Run` function allows for structured execution of subtests,
+		// providing descriptive names for each test case to make it easier to identify results
+		// and isolate failures to specific scenarios. The inner function receives
+		// the testing context (t *testing.T) to report results related to this subtest.
+		t.Run(tt.name, func(t *testing.T) {
+			// Initialize a new Request object with the initial cookies provided in the test case.
+			// This setup allows the test to simulate different scenarios by using varying initial cookies.
+			// The initialCookies slice contains the cookies that are already present in the request,
+			// and the SetCookie method will be tested to see how it appends the new cookies to this list.
+			req := &Request{Cookies: tt.initialCookies}
+
+			// Call the SetCookie method with the new cookies specified in the test case.
+			// This action appends the new cookies to the existing list of cookies in the request object.
+			// The method uses variadic parameters to handle multiple cookie inputs, allowing it to append
+			// one or more cookies to the request's Cookies slice.
+			req.SetCookie(tt.newCookies...)
+			// Assert that the total number of cookies in the request matches the expected count.
+			// This checks whether the SetCookie method correctly appended the new cookies to the existing list.
+			// The len function is used to get the number of cookies in the request, and it is compared with
+			// the expectedCount defined in the test case. If the numbers do not match, the test will fail,
+			// indicating that the method did not append the cookies correctly.
+			assert.Equal(t, tt.expectedCount, len(req.Cookies), "Unexpected number of cookies")
+
+			// Iterate through the cookies in the request and compare their names with the expected names.
+			// This loop checks whether the cookies were appended in the correct order and that the names
+			// match what was expected. Each expected cookie name is compared with the corresponding
+			// cookie name in the request's Cookies slice. If any name does not match, the test will fail,
+			// indicating that the SetCookie method did not behave as expected.
+			for i, expectedName := range tt.expectedNames {
+				// Assert that the name of the cookie at index `i` in the request's Cookies slice
+				// matches the expected cookie name. This comparison ensures that the cookies were appended
+				// in the correct order and that their names are exactly what the test case expects.
+				// If the name of the cookie in the request does not match the expected name from the test case,
+				// the test will fail with the message "Unexpected cookie name", helping to identify the issue.
+				assert.Equal(t, expectedName, req.Cookies[i].Name, "Unexpected cookie name")
+			}
+		})
+	}
 }
