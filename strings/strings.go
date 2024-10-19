@@ -10,6 +10,15 @@ func SplitStringBySeparator(input, sep string) (before, after string, found bool
 	// Calculate the length of the separator for later use.
 	sepLen := len(sep)
 
+	// Check if the length of the separator is zero, which indicates that an empty
+	// separator has been provided. This is important because splitting by an empty
+	// string does not yield meaningful results and should be handled explicitly.
+	if sepLen == 0 {
+		// Return the original input string as the before result, an empty string
+		// as the after result, and false to indicate that no valid separator was found.
+		return input, "", false
+	}
+
 	// Find the index of the first occurrence of the separator in the input string.
 	// The strings.Index function returns the index of the separator or -1 if it's not found.
 	if i := strings.Index(input, sep); i >= 0 {
