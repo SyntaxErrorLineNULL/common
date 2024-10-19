@@ -56,3 +56,42 @@ func TestSplitStringBySeparator(t *testing.T) {
 		})
 	}
 }
+
+// TestStringIsEmpty verifies the behavior of the StringIsEmpty function.
+// This test checks if the function accurately determines whether a given string
+// is empty or consists solely of whitespace characters. It covers multiple scenarios,
+// including completely empty strings, strings made up of only whitespace characters,
+// and normal strings. By asserting the output against expected results, the test
+// ensures that the StringIsEmpty function performs as intended across different inputs.
+func TestStringIsEmpty(t *testing.T) {
+	cases := []struct {
+		name     string
+		input    string
+		expected bool
+	}{
+		{"Empty String", "", true},
+		{"Whitespace Only", "   ", true},
+		{"Newline Only", "\n", true},
+		{"Tab Only", "\t", true},
+		{"Normal String", "Hello", false},
+		{"String with Whitespace", " Hello ", false},
+		{"Multiple Whitespaces", "   Hello   ", false},
+		{"Mixed Spaces and Newline", "   \n   ", true},
+	}
+
+	// Iterate through each test case defined in the cases slice.
+	// This loop executes each test case and validates the results independently.
+	for _, tt := range cases {
+		// Execute each test case as a subtest using t.Run, providing a descriptive name for each test.
+		// This allows for clearer identification of results for each scenario when tests are run.
+		t.Run(tt.name, func(t *testing.T) {
+			// Call the StringIsEmpty function with the input string from the current test case.
+			// This function checks whether the input string is empty or consists solely of whitespace.
+			result := StringIsEmpty(tt.input)
+			// Assert that the result from StringIsEmpty matches the expected value from the test case.
+			// The assert.Equal function checks if the actual result equals the expected value,
+			// confirming that the function behaves as intended for this specific input.
+			assert.Equal(t, tt.expected, result, "Expected result mismatch for input: %s", tt.input)
+		})
+	}
+}
