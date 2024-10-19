@@ -33,3 +33,13 @@ func SplitStringBySeparator(input, sep string) (before, after string, found bool
 	// an empty string as after, and false to indicate the separator wasn't found.
 	return input, "", false
 }
+
+// StringIsEmpty checks if a given string is empty or contains only whitespace.
+// It returns true if the string is empty or consists solely of whitespace characters,
+// and false otherwise.
+func StringIsEmpty(str string) bool {
+	// Use strings.TrimSpace to remove leading and trailing whitespace from the string.
+	// Check the length of the trimmed string. If the length is zero, it indicates that
+	// the original string was either empty or contained only whitespace.
+	return len(strings.TrimSpace(str)) == 0
+}
