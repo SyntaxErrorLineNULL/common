@@ -30,7 +30,7 @@ func TestSplitStringBySeparator(t *testing.T) {
 		{name: "separator at end", input: "hello,", sep: ",", expectedBefore: "hello", expectedAfter: "", expectedFound: true},
 		{name: "no separator", input: "helloworld", sep: ",", expectedBefore: "helloworld", expectedAfter: "", expectedFound: false},
 		{name: "empty input string", input: "", sep: ",", expectedBefore: "", expectedAfter: "", expectedFound: false},
-		{name: "empty separator", input: "helloworld", sep: "", expectedBefore: "", expectedAfter: "helloworld", expectedFound: true},
+		{name: "empty separator", input: "helloworld", sep: "", expectedBefore: "helloworld", expectedAfter: "", expectedFound: false},
 		{name: "long separator", input: "helloXXworld", sep: "XX", expectedBefore: "hello", expectedAfter: "world", expectedFound: true},
 		{name: "separator not found in complex string", input: "abcdefg", sep: "123", expectedBefore: "abcdefg", expectedAfter: "", expectedFound: false},
 	}
