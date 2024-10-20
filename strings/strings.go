@@ -1,6 +1,9 @@
 package strings
 
-import "strings"
+import (
+	"strings"
+	"unicode/utf8"
+)
 
 // SplitStringBySeparator takes an input string and a separator, then splits the input string into two parts:
 // before the separator and after the separator, while also indicating whether the separator was found.
@@ -42,4 +45,102 @@ func StringIsEmpty(str string) bool {
 	// Check the length of the trimmed string. If the length is zero, it indicates that
 	// the original string was either empty or contained only whitespace.
 	return len(strings.TrimSpace(str)) == 0
+}
+
+// StringSplitAround is a function that splits an input string into multiple segments
+// based on specified width constraints, specifically maxWidth and overflowWidth.
+// The function ensures that each segment does not exceed the defined maximum width,
+// while also allowing for a specified overflow width. It handles cases where
+// maxWidth is negative by resetting it to zero and checks if the input string
+// can fit within the specified limits. If the input string exceeds these limits,
+// the function splits the input into chunks of words without splitting any individual
+// words across chunks, thus preserving the integrity of the words in the output.
+// The function returns a slice of strings, each representing a chunk of the
+// original input string that adheres to the defined width constraints.
+func StringSplitAround(input string, maxWidth, overflowWidth int) []string {
+	// Check if maxWidth is less than 0, which would indicate an invalid negative value.
+	// This ensures that maxWidth remains a valid non-negative value for further processing.
+	if maxWidth < 0 {
+		// Set maxWidth to 0 to handle invalid negative input, ensuring that the value used
+		// for splitting the string is non-negative and won't cause unexpected behavior.
+		maxWidth = 0
+	}
+
+	// Check if the number of runes (Unicode code points) in the input string is less than the sum
+	// of maxWidth and overflowWidth. This condition ensures that the string is short enough to fit
+	// within the allowed width without needing to be split.
+	if utf8.RuneCountInString(input) < maxWidth+overflowWidth {
+		// If the condition is true, return the input string as a single-element slice.
+		// This avoids unnecessary processing when the string already fits within the allowed width.
+		return []string{input}
+	}
+
+	// Create a 2D slice to hold chunks of words. The initial size is set to 1,
+	// indicating that we will start with one chunk to store the words.
+	chunks := make([][]string, 1)
+	// Initialize the currentChunk variable to track the index of the chunk
+	// that is currently being populated. This starts at 0, indicating the first chunk.
+	currentChunk := 0
+	// Initialize charCount to 0 to keep track of the total number of characters
+	// (runes) added to the current chunk. This will help manage the width limits.
+	charCount := 0
+
+	// Split the input string into words using whitespace as the delimiter.
+	// The strings.Fields function returns a slice of words, effectively
+	// removing any leading or trailing whitespace from the input.
+	words := strings.Fields(input)
+
+	// Iterate over each word in the slice of words obtained from the input string.
+	// The range keyword allows us to loop through the words slice, where
+	// the variable word represents the current word in each iteration.
+	// This loop processes each word individually, enabling us to manage
+	// the chunking of the input string based on the defined width limits.
+	for _, word := range words {
+		// Calculate the number of runes (characters) in the current word
+		// using utf8.RuneCountInString. This ensures we account for
+		// multi-byte characters correctly when determining the word length.
+		wordLength := utf8.RuneCountInString(word)
+
+		// Check if adding the current word would exceed the maximum allowed width,
+		// considering the overflow width. If it does exceed and the current chunk
+		// is not empty, we need to start a new chunk for the next word.
+		if charCount+wordLength > maxWidth+overflowWidth && len(chunks[currentChunk]) > 0 {
+			// Move to the next chunk by incrementing the currentChunk index.
+			// This allows us to begin filling the next chunk with new words.
+			currentChunk++
+			// Reset the character count to 0 for the new chunk,
+			// as we are starting fresh with a new set of words.
+			charCount = 0
+			// Append a new empty slice to the chunks slice to represent the new chunk,
+			// which will be filled with the next set of words.
+			chunks = append(chunks, []string{})
+		}
+
+		// Add the current word to the current chunk's slice of words.
+		// This appends the word to the slice located at the index currentChunk.
+		chunks[currentChunk] = append(chunks[currentChunk], word)
+		// Update the character count by adding the length of the current word.
+		// This keeps track of how many characters are in the current chunk,
+		// allowing us to manage the width constraints effectively.
+		charCount += wordLength
+	}
+
+	// Create a new slice called result, initialized with zero length and a capacity
+	// equal to the number of chunks. This pre-allocation optimizes memory usage
+	// by allocating enough space to hold all the resulting strings from the chunking process.
+	result := make([]string, 0, len(chunks))
+
+	// Iterate over each chunk in the chunks slice.
+	// The range keyword allows us to loop through the chunks slice, where
+	// chunk represents the current chunk of words being processed in each iteration.
+	for _, chunk := range chunks {
+		// Join the words in the current chunk into a single string, separating them with spaces.
+		// The strings.Join function concatenates the words, effectively reconstructing the
+		// chunk as a single string, which is then appended to the result slice.
+		result = append(result, strings.Join(chunk, " "))
+	}
+
+	// Return the final result slice, which contains the strings constructed
+	// from the chunks of the input string based on the defined width limits.
+	return result
 }
