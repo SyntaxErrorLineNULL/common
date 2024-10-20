@@ -57,22 +57,22 @@ func StringIsEmpty(str string) bool {
 // words across chunks, thus preserving the integrity of the words in the output.
 // The function returns a slice of strings, each representing a chunk of the
 // original input string that adheres to the defined width constraints.
-func StringSplitAround(input string, maxWidth, overflowWidth int) []string {
+func StringSplitAround(str string, maxWidth, overflowWidth int) []string {
 	// Check if maxWidth is less than 0, which would indicate an invalid negative value.
 	// This ensures that maxWidth remains a valid non-negative value for further processing.
 	if maxWidth < 0 {
-		// Set maxWidth to 0 to handle invalid negative input, ensuring that the value used
+		// Set maxWidth to 0 to handle invalid negative str, ensuring that the value used
 		// for splitting the string is non-negative and won't cause unexpected behavior.
 		maxWidth = 0
 	}
 
-	// Check if the number of runes (Unicode code points) in the input string is less than the sum
+	// Check if the number of runes (Unicode code points) in the str string is less than the sum
 	// of maxWidth and overflowWidth. This condition ensures that the string is short enough to fit
 	// within the allowed width without needing to be split.
-	if utf8.RuneCountInString(input) < maxWidth+overflowWidth {
-		// If the condition is true, return the input string as a single-element slice.
+	if utf8.RuneCountInString(str) < maxWidth+overflowWidth {
+		// If the condition is true, return the str string as a single-element slice.
 		// This avoids unnecessary processing when the string already fits within the allowed width.
-		return []string{input}
+		return []string{str}
 	}
 
 	// Create a 2D slice to hold chunks of words. The initial size is set to 1,
@@ -85,16 +85,16 @@ func StringSplitAround(input string, maxWidth, overflowWidth int) []string {
 	// (runes) added to the current chunk. This will help manage the width limits.
 	charCount := 0
 
-	// Split the input string into words using whitespace as the delimiter.
+	// Split the str string into words using whitespace as the delimiter.
 	// The strings.Fields function returns a slice of words, effectively
-	// removing any leading or trailing whitespace from the input.
-	words := strings.Fields(input)
+	// removing any leading or trailing whitespace from the str.
+	words := strings.Fields(str)
 
-	// Iterate over each word in the slice of words obtained from the input string.
+	// Iterate over each word in the slice of words obtained from the str string.
 	// The range keyword allows us to loop through the words slice, where
 	// the variable word represents the current word in each iteration.
 	// This loop processes each word individually, enabling us to manage
-	// the chunking of the input string based on the defined width limits.
+	// the chunking of the str string based on the defined width limits.
 	for _, word := range words {
 		// Calculate the number of runes (characters) in the current word
 		// using utf8.RuneCountInString. This ensures we account for
@@ -141,6 +141,30 @@ func StringSplitAround(input string, maxWidth, overflowWidth int) []string {
 	}
 
 	// Return the final result slice, which contains the strings constructed
-	// from the chunks of the input string based on the defined width limits.
+	// from the chunks of the str string based on the defined width limits.
 	return result
+}
+
+// UpperCaseFirst takes a string as input and returns the same string
+// with the first non-whitespace character converted to uppercase.
+// If the input string is empty or consists only of whitespace, it returns
+// the string unchanged. This function ensures that only the first character
+// of the trimmed string is affected, while the rest of the characters are
+// converted to lowercase, providing a standardized format for the output.
+func UpperCaseFirst(str string) string {
+	// Check if the input string is empty or contains only whitespace.
+	// If it is, return the input string as-is, ensuring no changes are made.
+	if StringIsEmpty(str) {
+		return str
+	}
+
+	// Remove leading whitespace from the input string to focus on the first character.
+	// This prepares the string for the uppercase conversion of the first character.
+	trimmed := strings.TrimLeft(str, " ")
+
+	// Convert the first character of the trimmed string to uppercase.
+	// Use strings.ToUpper to change the case of the first character,
+	// and then concatenate it with the rest of the trimmed string
+	// converted to lowercase.
+	return strings.ToUpper(trimmed[:1]) + strings.ToLower(trimmed[1:])
 }
