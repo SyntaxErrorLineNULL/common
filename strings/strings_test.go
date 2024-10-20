@@ -193,3 +193,44 @@ func TestStringSplitAround(t *testing.T) {
 		})
 	}
 }
+
+// TestUpperCaseFirst verifies the behavior of the UpperCaseFirst function.
+// This test checks if the function correctly capitalizes the first non-whitespace
+// character of the input string while converting the rest of the string to lowercase.
+// It covers various scenarios, including normal strings, empty strings,
+// strings with leading whitespace, and strings containing special characters.
+// By asserting the output against expected results, the test ensures that
+// the UpperCaseFirst function performs as intended across different inputs.
+func TestUpperCaseFirst(t *testing.T) {
+	// Define a slice of test cases, where each case consists of an input string
+	// and the expected output string after processing through UpperCaseFirst.
+	cases := []struct {
+		input    string
+		expected string
+	}{
+		{"hello", "Hello"},
+		{"hello world", "Hello world"},
+		{"HELLO", "Hello"},
+		{"", ""},
+		{"   leading spaces", "Leading spaces"},
+		{"123abc", "123abc"},
+		{"!@#$%^&*()", "!@#$%^&*()"},
+		{"nO CHanGE", "No change"},
+		{"already Upper", "Already upper"},
+	}
+
+	// Iterate over each test case defined in the cases slice.
+	// This loop will evaluate the UpperCaseFirst function using each input string
+	// provided in the test cases, allowing for independent validation of each scenario.
+	for _, test := range cases {
+		// Call the UpperCaseFirst function with the current test case's input string.
+		// This function is expected to capitalize the first non-whitespace character
+		// and convert the rest of the string to lowercase.
+		result := UpperCaseFirst(test.input)
+		// Assert that the result from UpperCaseFirst matches the expected output
+		// specified in the test case. The assert.Equal function checks if the actual
+		// result equals the expected value, providing a descriptive message that includes
+		// both the expected and actual results for better debugging.
+		assert.Equal(t, test.expected, result, "Expected %q but got %q", test.expected, result)
+	}
+}
