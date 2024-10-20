@@ -91,7 +91,105 @@ func TestStringIsEmpty(t *testing.T) {
 			// Assert that the result from StringIsEmpty matches the expected value from the test case.
 			// The assert.Equal function checks if the actual result equals the expected value,
 			// confirming that the function behaves as intended for this specific input.
-			assert.Equal(t, tt.expected, result, "Expected result mismatch for input: %s", tt.input)
+			assert.Equal(t, tt.expected, result, "Expected result mismatch for input: %input", tt.input)
+		})
+	}
+}
+
+// TestStringSplitAround verifies the behavior of the StringSplitAround function.
+// The test ensures that the function correctly splits an input string into segments based on
+// specified maximum widths and an optional offset. It covers various scenarios, such as
+// handling empty strings, short strings, long text with different offsets, and cases
+// where the maximum width is positive or negative. The test checks the correctness of the
+// split by asserting that the returned segments match the expected values, confirming that
+// the StringSplitAround function operates as intended across different input configurations.
+func TestStringSplitAround(t *testing.T) {
+	// Define a slice of test cases to cover different scenarios for string splitting.
+	// Each test case includes a name to identify the specific scenario, the input string,
+	// the maximum width for splitting, the offset from which to start splitting, and the
+	// expected result of the split operation.
+	cases := []struct {
+		name          string
+		input         string
+		maxWidth      int
+		overflowWidth int
+		want          []string
+	}{
+		{
+			name:          "empty",
+			input:         "",
+			maxWidth:      10,
+			overflowWidth: 10,
+			want:          []string{""},
+		},
+		{
+			name:          "short",
+			input:         "short",
+			maxWidth:      10,
+			overflowWidth: 10,
+			want:          []string{"short"},
+		},
+		{
+			name:          "long text with offset 10",
+			input:         "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+			maxWidth:      100,
+			overflowWidth: 10,
+			want: []string{
+				"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut",
+				"enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in",
+				"reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident,",
+				"sunt in culpa qui officia deserunt mollit anim id est laborum.",
+			},
+		},
+		{
+			name:          "long text with offset 0",
+			input:         "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+			maxWidth:      100,
+			overflowWidth: 0,
+			want: []string{
+				"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna",
+				"aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+				"Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint",
+				"occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+			},
+		},
+		{
+			name:          "medium text with short around",
+			input:         "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+			maxWidth:      5,
+			overflowWidth: 0,
+			want: []string{
+				"Lorem", "ipsum", "dolor", "sit", "amet,",
+				"consectetur", "adipiscing", "elit,", "sed do",
+				"eiusmod", "tempor", "incididunt", "ut", "labore",
+				"et", "dolore", "magna", "aliqua."},
+		},
+		{
+			name:          "medium text with short around",
+			input:         "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+			maxWidth:      -5,
+			overflowWidth: 0,
+			want: []string{
+				"Lorem", "ipsum", "dolor", "sit", "amet,",
+				"consectetur", "adipiscing", "elit,", "sed", "do",
+				"eiusmod", "tempor", "incididunt", "ut", "labore",
+				"et", "dolore", "magna", "aliqua."},
+		},
+	}
+
+	// Iterate through each test case defined in the cases slice.
+	// This loop executes each test case and validates the results independently.
+	for _, tt := range cases {
+		// Execute each test case as a subtest using t.Run, providing a descriptive name for each test.
+		// This allows for clearer identification of results for each scenario when tests are run.
+		t.Run(tt.name, func(t *testing.T) {
+			// Call the StringSplitAround function with the input string from the current test case.
+			// This function checks how the input string is split according to the specified widths.
+			result := StringSplitAround(tt.input, tt.maxWidth, tt.overflowWidth)
+			// Assert that the result from StringSplitAround matches the expected value from the test case.
+			// The assert.Equal function checks if the actual result equals the expected value,
+			// confirming that the function behaves as intended for this specific input.
+			assert.Equal(t, tt.want, result, "Expected result mismatch for input: %input", tt.input)
 		})
 	}
 }
