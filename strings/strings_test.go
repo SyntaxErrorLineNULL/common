@@ -96,13 +96,13 @@ func TestStringIsEmpty(t *testing.T) {
 	}
 }
 
-// TestStringSplitAround verifies the behavior of the StringSplitAround function.
+// TestStringSplitAround verifies the behavior of the SplitStringWithWidthConstraints function.
 // The test ensures that the function correctly splits an input string into segments based on
 // specified maximum widths and an optional offset. It covers various scenarios, such as
 // handling empty strings, short strings, long text with different offsets, and cases
 // where the maximum width is positive or negative. The test checks the correctness of the
 // split by asserting that the returned segments match the expected values, confirming that
-// the StringSplitAround function operates as intended across different input configurations.
+// the SplitStringWithWidthConstraints function operates as intended across different input configurations.
 func TestStringSplitAround(t *testing.T) {
 	// Define a slice of test cases to cover different scenarios for string splitting.
 	// Each test case includes a name to identify the specific scenario, the input string,
@@ -183,10 +183,10 @@ func TestStringSplitAround(t *testing.T) {
 		// Execute each test case as a subtest using t.Run, providing a descriptive name for each test.
 		// This allows for clearer identification of results for each scenario when tests are run.
 		t.Run(tt.name, func(t *testing.T) {
-			// Call the StringSplitAround function with the input string from the current test case.
+			// Call the SplitStringWithWidthConstraints function with the input string from the current test case.
 			// This function checks how the input string is split according to the specified widths.
-			result := StringSplitAround(tt.input, tt.maxWidth, tt.overflowWidth)
-			// Assert that the result from StringSplitAround matches the expected value from the test case.
+			result := SplitStringWithWidthConstraints(tt.input, tt.maxWidth, tt.overflowWidth)
+			// Assert that the result from SplitStringWithWidthConstraints matches the expected value from the test case.
 			// The assert.Equal function checks if the actual result equals the expected value,
 			// confirming that the function behaves as intended for this specific input.
 			assert.Equal(t, tt.want, result, "Expected result mismatch for input: %input", tt.input)

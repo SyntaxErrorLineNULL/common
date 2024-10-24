@@ -47,17 +47,12 @@ func StringIsEmpty(str string) bool {
 	return len(strings.TrimSpace(str)) == 0
 }
 
-// StringSplitAround is a function that splits an input string into multiple segments
-// based on specified width constraints, specifically maxWidth and overflowWidth.
-// The function ensures that each segment does not exceed the defined maximum width,
-// while also allowing for a specified overflow width. It handles cases where
-// maxWidth is negative by resetting it to zero and checks if the input string
-// can fit within the specified limits. If the input string exceeds these limits,
-// the function splits the input into chunks of words without splitting any individual
-// words across chunks, thus preserving the integrity of the words in the output.
-// The function returns a slice of strings, each representing a chunk of the
-// original input string that adheres to the defined width constraints.
-func StringSplitAround(str string, maxWidth, overflowWidth int) []string {
+// SplitStringWithWidthConstraints splits an input string into multiple segments
+// based on specified width constraints: maxWidth and overflowWidth. Each segment
+// adheres to the maxWidth limit while allowing overflowWidth, ensuring that no
+// words are broken across segments. It returns a slice of strings, each representing
+// a chunk of the original input string that fits within the defined width constraints.
+func SplitStringWithWidthConstraints(str string, maxWidth, overflowWidth int) []string {
 	// Check if maxWidth is less than 0, which would indicate an invalid negative value.
 	// This ensures that maxWidth remains a valid non-negative value for further processing.
 	if maxWidth < 0 {
