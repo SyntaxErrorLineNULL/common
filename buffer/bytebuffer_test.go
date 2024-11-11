@@ -99,4 +99,36 @@ func TestByteBuffer(t *testing.T) {
 		// If the number of bytes is not 0, the test will fail with the message "No bytes should be read from an empty buffer".
 		assert.Equal(t, 0, n, "No bytes should be read from an empty buffer")
 	})
+
+	// ReturnsCorrectBytes checks that data written to the buffer can be correctly retrieved.
+	// This test ensures that the Write method appends data to the buffer without error,
+	// and the Bytes method retrieves the exact data that was written. It confirms that
+	// the buffer behaves correctly by storing and returning the expected bytes.
+	t.Run("ReturnsCorrectBytes", func(t *testing.T) {
+		// Create a new instance of ByteBuffer. This ensures that each test starts with a fresh buffer.
+		// The buffer is initialized to be empty, so no previous data will interfere with the test.
+		buf := &ByteBuffer{}
+
+		// Define the data to be written to the buffer.
+		// The byte slice contains the string "hello", which will be written to the buffer.
+		// This data will be used to test the buffer's ability to store and return data correctly.
+		data := []byte("hello")
+
+		// Write data to the buffer using the Write method.
+		// The Write method appends the provided data to the buffer and returns the number of bytes written.
+		_, err := buf.Write(data)
+		// Check that no error occurred during the Write operation.
+		// The assert.NoError function ensures that the Write method executed without errors.
+		// If an error occurs, the test will fail with the message "Write should not return an error".
+		assert.NoError(t, err, "Write should not return an error")
+
+		// Retrieve the bytes from the buffer using the Bytes method.
+		// The Bytes method returns the byte slice that was written to the buffer.
+		// This allows us to check if the buffer correctly stored the data written to it.
+		bytes := buf.Bytes()
+		// Verify that the bytes returned by the Bytes method are equal to the original data.
+		// The assert.Equal function checks that the retrieved bytes match the data that was initially written.
+		// If the data does not match, the test will fail with the message "Bytes should return the correct data".
+		assert.Equal(t, data, bytes, "Bytes should return the correct data")
+	})
 }
