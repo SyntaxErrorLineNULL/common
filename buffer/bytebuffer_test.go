@@ -7,6 +7,8 @@ import (
 )
 
 func TestByteBuffer(t *testing.T) {
+	t.Parallel()
+
 	// Writes and reads data using the ByteBuffer struct.
 	// This test ensures that data can be written to the buffer and read back correctly,
 	// verifying the buffer's ability to store and retrieve data, as well as handling of empty buffer errors.
@@ -61,5 +63,40 @@ func TestByteBuffer(t *testing.T) {
 		// The assertion checks that the byte slice readData contains exactly the same content
 		// as the byte slice `data` that was originally written to the buffer.
 		assert.Equal(t, data, readBuffer, "Read should return the correct data")
+	})
+
+	// Reads data from an empty buffer and checks the behavior.
+	// This test verifies that when attempting to read from an empty buffer,
+	// the `Read` method returns an error and does not read any data. It ensures
+	// that the buffer properly handles the empty state and responds correctly
+	// with an error and zero bytes read.
+	t.Run("ReadFromEmptyBuffer", func(t *testing.T) {
+		// Create a new ByteBuffer instance without writing any data to it.
+		// This ensures that the buffer is empty before the read operation, which
+		// allows us to test how the Read method handles the empty buffer scenario.
+		buf := &ByteBuffer{}
+
+		// Prepare a buffer to read data into.
+		// The read buffer is a byte slice of length 5, meaning it expects the Read
+		// method to attempt reading 5 bytes. Since the buffer is empty, no data
+		// will be written to this buffer.
+		readBuffer := make([]byte, 5)
+
+		// Attempt to read from the empty buffer.
+		// Since the buffer is empty, we expect the Read method to return an error.
+		// Additionally, no data should be read, so the number of bytes read should be 0.
+		n, err := buf.Read(readBuffer)
+
+		// Assert that an error occurred during the read operation.
+		// The Read method should return an error because there is no data in the buffer.
+		// The `assert.Error` function checks that the error is not nil, and if it is,
+		// the test will fail with the message "Read should return an error when the buffer is empty".
+		assert.Error(t, err, "Read should return an error when the buffer is empty")
+
+		// Assert that no bytes were read from the empty buffer.
+		// Since the buffer has no data, the number of bytes read should be 0.
+		// The `assert.Equal` function checks that the number of bytes returned by the Read method is 0.
+		// If the number of bytes is not 0, the test will fail with the message "No bytes should be read from an empty buffer".
+		assert.Equal(t, 0, n, "No bytes should be read from an empty buffer")
 	})
 }
