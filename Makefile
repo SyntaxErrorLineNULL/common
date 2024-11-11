@@ -12,3 +12,14 @@ lint: ## Run linter
 # The -v flag makes the test output verbose, showing detailed information about each test.
 test: ## Run tests
 	go test -v ./...
+
+semver-cli:
+ifeq (, $(shell which semver-cli))
+	@printf "\033[36m%s\033[0m\n" "Installing semvercli..."
+	go install github.com/jfwenisch/semver-cli@latest
+endif
+
+bump: semver-cli ## Bump version, generate git tag and push it to repository
+	@printf "\033[36m%s\033[0m\n" "Bumping version..."
+	@git fetch --all --tags
+	@semver-cli tags bump -t patch -p v
