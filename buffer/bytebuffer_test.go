@@ -165,4 +165,43 @@ func TestByteBuffer(t *testing.T) {
 		// If the buffer content is incorrect, the test will fail with "Buffer should contain the same data as the reader after reading".
 		assert.Equal(t, data, buf.Bytes(), "Buffer should contain the same data as the reader after reading")
 	})
+
+	// HandlesEmptyReader verifies the behavior of ByteBuffer when attempting to read from an empty reader.
+	// This test ensures that the ReadFrom method does not produce an error when the input reader is empty,
+	// returns zero bytes read, and leaves the ByteBuffer in an empty state. This behavior is important because
+	// it confirms that the ReadFrom method can handle edge cases, such as reading from a source with no data,
+	// without altering the buffer's contents or producing errors.
+	t.Run("HandlesEmptyReader", func(t *testing.T) {
+		// Create a new ByteBuffer instance that will serve as the target buffer for the read operation.
+		// This buffer is initially empty, which allows us to observe any changes to it after attempting to read.
+		buf := &ByteBuffer{}
+
+		// Set up an empty reader using bytes.NewReader with an empty byte slice as input.
+		// This reader simulates a data source with no content, which is critical to test how the ByteBuffer
+		// handles the case of reading from a source that provides zero bytes of data.
+		emptyReader := bytes.NewReader([]byte{})
+
+		// Perform the read operation by calling ReadFrom with the empty reader.
+		// This step attempts to read from the empty reader, and since there is no data, it should read zero bytes.
+		// We will check both the byte count and error output to confirm that the method correctly handles empty input.
+		n, err := buf.ReadFrom(emptyReader)
+
+		// Confirm that no error occurred during the read operation.
+		// Since the reader is empty, the ReadFrom method should not encounter any issues.
+		// The assert.NoError function verifies that the error returned is nil, and if not, the test fails with
+		// the message "ReadFrom should not return an error when reading from an empty reader."
+		assert.NoError(t, err, "ReadFrom should not return an error when reading from an empty reader")
+
+		// Check that the number of bytes read is zero, as expected for an empty reader.
+		// Since there is no data in the reader, ReadFrom should report zero bytes read.
+		// The assert.Equal function confirms that the number of bytes read matches the expected value of zero,
+		// and if not, it fails with the message "ReadFrom should return 0 bytes read for an empty reader."
+		assert.Equal(t, int64(0), n, "ReadFrom should return 0 bytes read for an empty reader")
+
+		// Verify that the ByteBuffer remains empty after the read operation.
+		// Given that the reader had no data, the buffer should not have any content added to it.
+		// The assert.Equal function checks that the buffer's length is still zero, indicating no changes were made.
+		// If the buffer is not empty, the test fails with the message "Buffer should remain empty after reading from an empty reader."
+		assert.Equal(t, 0, buf.Len(), "Buffer should remain empty after reading from an empty reader")
+	})
 }
