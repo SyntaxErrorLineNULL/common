@@ -204,4 +204,35 @@ func TestByteBuffer(t *testing.T) {
 		// If the buffer is not empty, the test fails with the message "Buffer should remain empty after reading from an empty reader."
 		assert.Equal(t, 0, buf.Len(), "Buffer should remain empty after reading from an empty reader")
 	})
+
+	// Resets a ByteBuffer that has data, verifying that after Reset, the buffer is empty.
+	// This test ensures that the Reset function correctly clears the buffer's contents,
+	// both in terms of length and actual data. It checks that the buffer is properly reset
+	// from a non-empty state to an empty state, confirming the correctness of the Reset method.
+	t.Run("ResetBufferWithData", func(t *testing.T) {
+		// Initialize ByteBuffer with some data.
+		// This sets up the buffer with the string "some data", which will be used to test the Reset function.
+		// The bytes field of the buffer contains the byte representation of the string "some data".
+		buf := &ByteBuffer{bytes: []byte("some data")}
+
+		// Verify that the buffer is not empty initially.
+		// This assertion checks the length of the buffer before Reset is called.
+		// The buffer should contain 9 bytes (the length of "some data").
+		assert.Equal(t, 9, len(buf.bytes), "Buffer length should be 9 before Reset")
+		// This assertion verifies the content of the buffer before Reset.
+		// The buffer should contain the exact byte sequence of "some data".
+		assert.Equal(t, "some data", string(buf.bytes), "Buffer content should be 'some data' before Reset")
+
+		// Call Reset to clear the buffer.
+		// The Reset method is invoked to empty the buffer and set its length to 0.
+		buf.Reset()
+
+		// Verify that the buffer is empty after Reset.
+		// This assertion checks that the buffer's length is 0 after Reset.
+		// The Reset method should clear the contents, making the buffer empty.
+		assert.Equal(t, 0, len(buf.bytes), "Buffer length should be 0 after Reset")
+		// This assertion ensures that the buffer's byte slice is empty after Reset.
+		// The buffer should have no data remaining after calling Reset.
+		assert.Empty(t, buf.bytes, "Buffer should be empty after Reset")
+	})
 }
