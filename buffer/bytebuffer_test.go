@@ -1,6 +1,7 @@
 package buffer
 
 import (
+	"bytes"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -130,5 +131,38 @@ func TestByteBuffer(t *testing.T) {
 		// The assert.Equal function checks that the retrieved bytes match the data that was initially written.
 		// If the data does not match, the test will fail with the message "Bytes should return the correct data".
 		assert.Equal(t, data, bytes, "Bytes should return the correct data")
+	})
+
+	// ReadsDataCorrectly ensures that data can be read from a source into the buffer without errors.
+	// This test checks that the ReadFrom method reads the correct number of bytes from the reader
+	// into the buffer and that the buffer accurately stores the data read. It confirms the buffer's
+	// ability to correctly store the data from the reader and reflects the exact content as expected.
+	t.Run("ReadsDataCorrectly", func(t *testing.T) {
+		// Initialize a new, empty ByteBuffer instance.
+		// This buffer will hold the data read from the reader in the ReadFrom operation.
+		buf := &ByteBuffer{}
+		// Define a byte slice containing the test data "hello world".
+		// This data will serve as the source content for reading into the ByteBuffer.
+		data := []byte("hello world")
+		// Create a new bytes.Reader to wrap the test data slice.
+		// The bytes.Reader allows sequential reading of the data as required by the ReadFrom method.
+		reader := bytes.NewReader(data)
+
+		// Call ReadFrom to read data from the reader into the buffer.
+		// This method reads the entire content of the reader and appends it to the buffer.
+		// The return values include the number of bytes read and any error encountered.
+		n, err := buf.ReadFrom(reader)
+		// Assert that no error was returned during the read operation.
+		// The assert.NoError function ensures the ReadFrom operation succeeded without errors.
+		// If an error occurs, the test will fail with the message "ReadFrom should not return an error when reading valid data".
+		assert.NoError(t, err, "ReadFrom should not return an error when reading valid data")
+		// Assert that the number of bytes read matches the length of the data.
+		// The assert.Equal function checks that the ReadFrom method returned the correct number of bytes.
+		// If the byte count is incorrect, the test will fail with "ReadFrom should return the correct number of bytes read".
+		assert.Equal(t, int64(len(data)), n, "ReadFrom should return the correct number of bytes read")
+		// Assert that the buffer now contains the same data as the reader.
+		// This check confirms that the buffer stored the data accurately by comparing it to the original data.
+		// If the buffer content is incorrect, the test will fail with "Buffer should contain the same data as the reader after reading".
+		assert.Equal(t, data, buf.Bytes(), "Buffer should contain the same data as the reader after reading")
 	})
 }
