@@ -235,4 +235,36 @@ func TestByteBuffer(t *testing.T) {
 		// The buffer should have no data remaining after calling Reset.
 		assert.Empty(t, buf.bytes, "Buffer should be empty after Reset")
 	})
+
+	// Resets an already empty ByteBuffer, verifying that the buffer remains empty after Reset.
+	// This test ensures that calling Reset on an already empty buffer has no effect on its state.
+	// It checks that the buffer retains its empty state, confirming the correctness of the Reset method
+	// when invoked on a buffer that is already in its default empty state.
+	t.Run("ResetEmptyBuffer", func(t *testing.T) {
+		// Initialize ByteBuffer with an empty buffer.
+		// This sets up the buffer with an empty byte slice, which will be used to test the Reset function.
+		// The buffer's bytes field is initialized to an empty slice.
+		buf := &ByteBuffer{bytes: []byte{}}
+
+		// Verify that the buffer is empty initially.
+		// This assertion checks the length of the buffer before Reset is called.
+		// The buffer should be empty, so its length is expected to be 0.
+		assert.Equal(t, 0, len(buf.bytes), "Buffer length should be 0 before Reset")
+		// This assertion checks that the buffer's byte slice is empty.
+		// The buffer should not contain any data before Reset is invoked.
+		assert.Empty(t, buf.bytes, "Buffer should be empty before Reset")
+
+		// Call Reset to clear the buffer (no-op on an already empty buffer).
+		// Since the buffer is already empty, calling Reset should have no effect.
+		// The state of the buffer should remain the same.
+		buf.Reset()
+
+		// Verify that the buffer is still empty after Reset.
+		// This assertion checks that the buffer's length remains 0 after Reset.
+		// The Reset method should have no impact on an already empty buffer.
+		assert.Equal(t, 0, len(buf.bytes), "Buffer length should remain 0 after Reset")
+		// This assertion ensures that the buffer remains empty after calling Reset.
+		// The buffer's byte slice should still be empty after the Reset operation.
+		assert.Empty(t, buf.bytes, "Buffer should remain empty after Reset")
+	})
 }
