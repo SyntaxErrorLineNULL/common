@@ -181,3 +181,13 @@ func (b *ByteBuffer) ReadFrom(reader io.Reader) (int64, error) {
 		}
 	}
 }
+
+// Reset clears the content of the ByteBuffer by resetting its internal byte slice.
+// It sets the length of the buffer to 0 while keeping the underlying capacity intact,
+// effectively making the buffer empty without reallocating memory. This allows the buffer
+// to be reused efficiently without the overhead of memory reallocation.
+func (b *ByteBuffer) Reset() {
+	// Resets the buffer's length to 0, effectively clearing its contents while keeping the underlying array intact.
+	// This allows the buffer to be reused without reallocating memory.
+	b.bytes = b.bytes[:0]
+}
