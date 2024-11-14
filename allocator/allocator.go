@@ -4,7 +4,6 @@ package allocator
 import "C"
 import (
 	"errors"
-	"math"
 	"unsafe"
 )
 
@@ -40,10 +39,10 @@ type MemoryAllocator struct{}
 // prevent invalid memory allocations. The method uses C.malloc to perform
 // the allocation and returns a pointer to the allocated block if successful.
 func (alloc *MemoryAllocator) Malloc(size int) (unsafe.Pointer, error) {
-	// Convert the size to a float64 to check if it's negative using math.Signbit.
-	// The Signbit function is a robust way to verify if a value is negative,
-	// even when size is cast to a different type for compatibility with C.
-	if math.Signbit(float64(size)) {
+	// Check if size is zero or negative, which are invalid values for memory allocation.
+	// Memory allocation requests of zero or negative size do not make logical sense,
+	// and attempting to allocate such sizes could lead to undefined behavior.
+	if size <= 0 {
 		// Return an error message if the size is negative, as allocating
 		// a negative block size is invalid and may cause undefined behavior.
 		return nil, errors.New("size is negative")
