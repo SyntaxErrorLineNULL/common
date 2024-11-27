@@ -1,7 +1,9 @@
 package slices
 
 import (
+	"fmt"
 	"sort"
+	"strings"
 	"testing"
 
 	"github.com/SyntaxErrorLineNULL/common/test"
@@ -449,5 +451,171 @@ func TestExclude(t *testing.T) {
 				assert.Equal(t, tt.expected, result, "Test case %s failed", tt.name)
 			})
 		}
+	})
+}
+
+func TestMap(t *testing.T) {
+	t.Parallel()
+
+	// SliceIntToString tests the Map function for slices of integers transformed into strings.
+	// This test verifies that the Map function correctly applies the transformation function
+	// to each element of the integer slice, producing the expected slice of strings.
+	t.Run("SliceIntToString", func(t *testing.T) {
+		// Define a series of test cases to cover various scenarios for the Map function.
+		// Each test case includes a name, an input slice of integers, a transformation function, and the expected output slice of strings.
+		cases := []struct {
+			name          string
+			elements      []int
+			transformFunc func(int) string
+			expected      []string
+		}{
+			{name: "Empty slice", elements: []int{}, transformFunc: func(i int) string { return fmt.Sprintf("%d", i) }, expected: []string{}},
+			{name: "Single element slice", elements: []int{42}, transformFunc: func(i int) string { return fmt.Sprintf("Num:%d", i) }, expected: []string{"Num:42"}},
+			{name: "Multiple elements", elements: []int{1, 2, 3}, transformFunc: func(i int) string { return fmt.Sprintf("%d", i*10) }, expected: []string{"10", "20", "30"}},
+			{name: "Negative integers", elements: []int{-1, -2}, transformFunc: func(i int) string { return fmt.Sprintf("%d", i) }, expected: []string{"-1", "-2"}},
+		}
+
+		// Iterate over each test case defined in the `cases` slice.
+		// This loop ensures that the Map function is tested with a variety of inputs and transformation functions.
+		for _, tt := range cases {
+			// Define a subtest for each test case using t.Run.
+			// Subtests help isolate each scenario and provide detailed feedback if a particular case fails.
+			t.Run(tt.name, func(t *testing.T) {
+				// Execute the Map function using the test case's input slice and transformation function.
+				// The Map function is expected to transform each element in the input slice
+				// according to the logic defined in the provided transformation function.
+				result := Map(tt.elements, tt.transformFunc)
+
+				// Assert that the output from the Map function matches the expected output for the test case.
+				// If the result does not match, the test will fail and output the provided message,
+				// including the name of the test case for better debugging context.
+				assert.Equal(t, tt.expected, result, "Map output should match expected value for test case: %s", tt.name)
+			})
+		}
+	})
+
+	// SliceStringToString verifies that the Map function correctly transforms a slice of strings
+	// using various transformation functions. The test cases cover scenarios such as empty slices,
+	// single-element slices, multiple-element slices, and string transformations like appending
+	// or changing case. This ensures that the Map function behaves as expected across different inputs.
+	t.Run("SliceStringToString", func(t *testing.T) {
+		// Define test cases for transforming string slices into new string slices.
+		// Each test case specifies a name, input slice, transformation function, and the expected result.
+		cases := []struct {
+			name          string
+			elements      []string
+			transformFunc func(string) string
+			expected      []string
+		}{
+			{name: "Empty slice", elements: []string{}, transformFunc: func(s string) string { return fmt.Sprintf("%s_mod", s) }, expected: []string{}},
+			{name: "Single element slice", elements: []string{"test"}, transformFunc: func(s string) string { return fmt.Sprintf("%s_appended", s) }, expected: []string{"test_appended"}},
+			{name: "Multiple elements", elements: []string{"a", "b", "c"}, transformFunc: func(s string) string { return fmt.Sprintf("%s%s", s, s) }, expected: []string{"aa", "bb", "cc"}},
+			{name: "Uppercase transformation", elements: []string{"lower", "case"}, transformFunc: func(s string) string { return fmt.Sprintf("%s", strings.ToUpper(s)) }, expected: []string{"LOWER", "CASE"}},
+		}
+
+		// Iterate over each test case defined in the `cases` slice.
+		// This loop ensures that the Map function is tested with a variety of inputs and transformation functions.
+		for _, tt := range cases {
+			// Define a subtest for each test case using t.Run.
+			// Subtests help isolate each scenario and provide detailed feedback if a particular case fails.
+			t.Run(tt.name, func(t *testing.T) {
+				// Execute the Map function using the test case's input slice and transformation function.
+				// The Map function is expected to transform each element in the input slice
+				// according to the logic defined in the provided transformation function.
+				result := Map(tt.elements, tt.transformFunc)
+
+				// Assert that the output from the Map function matches the expected output for the test case.
+				// If the result does not match, the test will fail and output the provided message,
+				// including the name of the test case for better debugging context.
+				assert.Equal(t, tt.expected, result, "Map output should match expected value for test case: %s", tt.name)
+			})
+		}
+	})
+
+	// SliceComplexTransformations tests the Map function with scenarios involving complex transformation logic.
+	// This ensures the function can handle advanced mappings such as conditional evaluations, mathematical operations,
+	// and transformations with negative integers. Each test case provides a unique transformation logic to validate
+	// the robustness of the Map function when handling complex inputs and outputs.
+	t.Run("SliceComplexTransformations", func(t *testing.T) {
+		// Define test cases with various transformation functions applied to slices of integers.
+		// Each case includes a name for identification, an input slice, a transformation function, and the expected result.
+		cases := []struct {
+			name          string
+			elements      []int
+			transformFunc func(int) string
+			expected      []string
+		}{
+			{name: "Odd or Even", elements: []int{1, 2, 3, 4}, transformFunc: func(i int) string {
+				return fmt.Sprintf("%d:%s", i, map[bool]string{true: "Odd", false: "Even"}[i%2 != 0])
+			}, expected: []string{"1:Odd", "2:Even", "3:Odd", "4:Even"}},
+			{name: "Square of numbers", elements: []int{2, 3}, transformFunc: func(i int) string { return fmt.Sprintf("%d", i*i) }, expected: []string{"4", "9"}},
+			{name: "Negative handling", elements: []int{-1, 2, -3}, transformFunc: func(i int) string { return fmt.Sprintf("%d", i*2) }, expected: []string{"-2", "4", "-6"}},
+		}
+
+		// Iterate over each test case defined in the `cases` slice.
+		// This loop ensures that the Map function is tested with a variety of inputs and transformation functions.
+		for _, tt := range cases {
+			// Define a subtest for each test case using t.Run.
+			// Subtests help isolate each scenario and provide detailed feedback if a particular case fails.
+			t.Run(tt.name, func(t *testing.T) {
+				// Execute the Map function using the test case's input slice and transformation function.
+				// The Map function is expected to transform each element in the input slice
+				// according to the logic defined in the provided transformation function.
+				result := Map(tt.elements, tt.transformFunc)
+
+				// Assert that the output from the Map function matches the expected output for the test case.
+				// If the result does not match, the test will fail and output the provided message,
+				// including the name of the test case for better debugging context.
+				assert.Equal(t, tt.expected, result, "Expected Map result for test case: %s", tt.name)
+			})
+		}
+	})
+
+	// GeneratedDataWithFilterAndTransformation tests the Map function using a sequence of integers generated with
+	// specific constraints (no multiples of 100) and applies both filtering and transformation operations. The test
+	// validates the correctness of the Map function when used in conjunction with filtering logic that reduces the input
+	// set, followed by a transformation that modifies the filtered values. This ensures that the Map function can handle
+	// a chain of operations where filtering and transformation are combined correctly.
+	t.Run("GeneratedDataWithFilterAndTransformation", func(t *testing.T) {
+		// Generate a sequence of 250 integers, ensuring that no element is a multiple of 100.
+		// This function simulates a larger set of data that we can apply transformations and filters to.
+		// It produces a sequence that we can manipulate further for testing purposes.
+		input := test.CreateSequenceWithoutRepeats(250)
+
+		// Define the filter function that will be applied to the input data.
+		// In this case, we are only interested in even numbers (i.e., numbers divisible by 2).
+		filter := func(i int) bool { return i%2 == 0 }
+
+		// Define the transformation function that will be applied to each element in the filtered set.
+		// Here, each number will be multiplied by 2.
+		transform := func(i int) int { return i * 2 }
+
+		// Initialize a slice to hold the filtered values from the input sequence.
+		// We only append elements that satisfy the filter function (i.e., even numbers).
+		filtered := make([]int, 0, len(input))
+		for _, v := range input {
+			if filter(v) {
+				filtered = append(filtered, v)
+			}
+		}
+
+		// Use the Map function to apply the transformation to the filtered data.
+		// Each number in the filtered slice is passed through the transformation function
+		// (multiplying it by 2) and the results are collected in the result slice.
+		result := Map(filtered, transform)
+
+		// Prepare the expected result by manually applying the transformation to each filtered value.
+		// This serves as a reference to compare against the result of the Map function.
+		var expected []int
+
+		for _, v := range filtered {
+			expected = append(expected, v*2)
+		}
+
+		// Assert that the result of applying the Map function to the filtered data matches the expected output.
+		// The expected output is calculated by manually applying the transformation (multiplying by 2) to each
+		// element of the filtered slice. This assertion ensures that the Map function correctly transformed the
+		// filtered elements according to the transformation logic and that the expected results are accurate.
+		assert.Equal(t, expected, result, "Transformed and filtered output should match expected")
 	})
 }
