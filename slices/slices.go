@@ -29,23 +29,27 @@ func Contains[T constraints.Ordered](elements []T, element T) bool {
 		return false
 	}
 
+	// Create a copy of the input slice to avoid modifying the original slice.
+	copiedElements := make([]T, len(elements))
+	copy(copiedElements, elements)
+
 	// Sort the slice in ascending order.
 	// Sorting is necessary for binary search to work correctly.
-	sort.Slice(elements, func(i, j int) bool {
-		return elements[i] < elements[j]
+	sort.Slice(copiedElements, func(i, j int) bool {
+		return copiedElements[i] < copiedElements[j]
 	})
 
 	// Use binary search to find the index of the element.
 	// `sort.Search` will return the index of the first element greater than or equal to `element`.
 	// If no such element is found, it returns the length of the slice.
-	index := sort.Search(len(elements), func(i int) bool {
-		return elements[i] >= element
+	index := sort.Search(len(copiedElements), func(i int) bool {
+		return copiedElements[i] >= element
 	})
 
 	// Validate the index to ensure it's within the bounds of the slice.
 	// Check if the element at the found index matches the search element.
 	// Return true if the element at the index equals the search element, otherwise false.
-	return index < len(elements) && elements[index] == element
+	return index < len(copiedElements) && copiedElements[index] == element
 }
 
 // Exclude removes all instances of a specified value from the provided slice.
