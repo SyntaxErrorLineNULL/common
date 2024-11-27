@@ -73,3 +73,88 @@ func Exclude[T comparable](elements []T, element T) []T {
 	// Return the filtered slice with the specified value removed.
 	return result
 }
+
+// Map applies a transformation function to each element of a slice and returns a new slice with the transformed elements.
+// This function takes a slice of type A and applies the provided transformation function to each element,
+// resulting in a new slice of type B containing the transformed values.
+// It ensures that the order of elements is preserved in the output slice, and all transformations are applied correctly.
+func Map[A, B any](elements []A, fn func(A) B) []B {
+	// Create a slice of type B with the same length as the input slice.
+	// This ensures the result slice has sufficient capacity to store the transformed elements.
+	result := make([]B, len(elements))
+
+	// Iterate over the input slice to transform each element.
+	// The index and value of each element are retrieved during the iteration.
+	for i, v := range elements {
+		// Apply the transformation function to the current element and store the result in the corresponding position in the result slice.
+		// This preserves the original order of the elements while applying the transformation.
+		result[i] = fn(v)
+	}
+
+	// Return the resulting slice containing the transformed elements.
+	return result
+}
+
+// Filter filters a slice of elements based on a provided predicate function.
+// It iterates over each element in the input slice and applies the predicate function to it.
+// If the predicate returns true for an element, that element is included in the result.
+// The result is a new slice containing only the elements that satisfied the predicate function.
+// This function is generic and works with any type of slice and predicate.
+func Filter[T any](elements []T, fn func(T) bool) []T {
+	var result []T
+
+	// Iterate over each element in the input slice.
+	// For each element, apply the predicate function.
+	// If the predicate returns true, append the element to the result slice.
+	for _, v := range elements {
+		// Check if the current element satisfies the predicate function fn.
+		// The predicate function fn is applied to the element v to determine if it should be included in the result.
+		if fn(v) {
+			// If the element satisfies the condition, it is added to the result slice.
+			// The append function dynamically grows the result slice and appends the element v to it.
+			result = append(result, v)
+		}
+	}
+
+	// Return the resulting slice containing only the elements that satisfy the predicate.
+	return result
+}
+
+// Unique removes duplicate elements from a slice of any comparable type.
+// It iterates over each element in the input slice and keeps track of the elements that have already been encountered.
+// If an element has not been encountered before, it is added to the result slice.
+// The result is a new slice containing only the unique elements, preserving their original order.
+// This function is generic and works with any comparable type, including integers, strings, structs, and more.
+func Unique[T comparable](elements []T) []T {
+	// Declare an empty slice to hold the unique elements.
+	// The result slice will store the final list of elements with duplicates removed.
+	var result []T
+	// Create a map to track the elements that have already been encountered.
+	// The map's key is the element itself, and the value is a boolean indicating if the element has been seen.
+	// The map's capacity is set to the length of the input slice for optimization.
+	seen := make(map[T]bool, len(elements))
+
+	// Iterate over each element in the input slice.
+	// The variable 'elem' holds the current element being processed from the input slice.
+	for _, elem := range elements {
+		// Check if the current element has already been seen.
+		// The 'ok' variable checks if the element exists in the 'seen' map.
+		if ok := seen[elem]; ok {
+			// If the element has been seen, skip it by continuing to the next iteration.
+			// This prevents duplicates from being added to the result.
+			continue
+		}
+
+		// If the element has not been seen before, mark it as seen.
+		// This is done by setting the value for the element in the 'seen' map to 'true'.
+		seen[elem] = true
+
+		// Append the unique element to the result slice.
+		// This action ensures that only unique elements are included in the final result.
+		result = append(result, elem)
+	}
+
+	// Return the result slice containing only unique elements from the input slice.
+	// The order of the elements is preserved.
+	return result
+}
