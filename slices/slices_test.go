@@ -852,6 +852,111 @@ func TestFilter(t *testing.T) {
 	})
 }
 
+func TestUnique(t *testing.T) {
+	// Define test cases for different data types to check the behavior of the Unique function.
+	// Each test case consists of a name, the input elements (which is the slice to deduplicate),
+	// and the expected result after duplicates are removed.
+	cases := []struct {
+		name     string
+		elements interface{}
+		expected interface{}
+	}{
+		{
+			name:     "Unique on integer slice with duplicates",
+			elements: []int{1, 2, 2, 3, 4, 4, 5},
+			expected: []int{1, 2, 3, 4, 5},
+		},
+		{
+			name:     "Unique on string slice with duplicates",
+			elements: []string{"apple", "banana", "apple", "orange", "banana", "grape"},
+			expected: []string{"apple", "banana", "orange", "grape"},
+		},
+		{
+			name:     "Unique on empty integer slice",
+			elements: []int{},
+			expected: []int(nil),
+		},
+		{
+			name:     "Unique on single element slice",
+			elements: []int{42},
+			expected: []int{42},
+		},
+		{
+			name: "Unique on struct slice with duplicates",
+			elements: []struct {
+				name string
+				age  int
+			}{{"John", 25}, {"Jane", 30}, {"John", 25}, {"Doe", 22}},
+			expected: []struct {
+				name string
+				age  int
+			}{{"John", 25}, {"Jane", 30}, {"Doe", 22}},
+		},
+		{
+			name:     "Unique on boolean slice with duplicates",
+			elements: []bool{true, false, true, true, false},
+			expected: []bool{true, false},
+		},
+		{
+			name:     "Unique on float slice with duplicates",
+			elements: []float64{1.1, 2.2, 3.3, 2.2, 1.1},
+			expected: []float64{1.1, 2.2, 3.3},
+		},
+		{
+			name:     "Unique on slice of pointers",
+			elements: []string{"apple", "banana", "apple"},
+			expected: []string{"apple", "banana"},
+		},
+		{
+			name:     "Unique on slice with nil elements",
+			elements: []*string{nil, nil, strPtr("apple"), nil, strPtr("banana")},
+			expected: []*string{nil, strPtr("apple"), strPtr("banana")},
+		},
+		{
+			name:     "Unique on slice of complex numbers",
+			elements: []complex128{complex(1, 1), complex(2, 2), complex(1, 1), complex(3, 3)},
+			expected: []complex128{complex(1, 1), complex(2, 2), complex(3, 3)},
+		},
+	}
+
+	// Iterate over the defined test cases, executing each one as a subtest.
+	// Subtests allow each test case to be run independently, making it easier
+	// to identify which specific case fails if an assertion does not hold.
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			// Inside each subtest, we handle each case based on the input type (elements).
+			// We declare a variable result of type interface{} to store the output of the Unique function.
+			var result interface{}
+
+			switch v := tt.elements.(type) {
+			case []int:
+				result = Unique(v)
+			case []string:
+				result = Unique(v)
+			case []struct {
+				name string
+				age  int
+			}:
+				result = Unique(v)
+			case []bool:
+				result = Unique(v)
+			case []float64:
+				result = Unique(v)
+			case []*string:
+				result = Unique(v)
+			case []complex128:
+				result = Unique(v)
+			}
+
+			// assert.Equal is used to check if the result matches the expected value.
+			// It compares the actual result with the expected value and reports an error if they don't match.
+			// The assertion will fail if result does not equal tt.expected, and the error message will include
+			// the test case name tt.name, the expected value tt.expected, and the actual result.
+			assert.Equal(t, tt.expected, result, "For case '%s', expected %v but got %v", tt.name, tt.expected, result)
+		})
+	}
+}
+
 // strPtr is a helper function to create a pointer to a string.
 func strPtr(s string) *string {
 	return &s
