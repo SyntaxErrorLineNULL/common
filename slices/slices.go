@@ -94,3 +94,28 @@ func Map[A, B any](elements []A, fn func(A) B) []B {
 	// Return the resulting slice containing the transformed elements.
 	return result
 }
+
+// Filter filters a slice of elements based on a provided predicate function.
+// It iterates over each element in the input slice and applies the predicate function to it.
+// If the predicate returns true for an element, that element is included in the result.
+// The result is a new slice containing only the elements that satisfied the predicate function.
+// This function is generic and works with any type of slice and predicate.
+func Filter[T any](elements []T, fn func(T) bool) []T {
+	var result []T
+
+	// Iterate over each element in the input slice.
+	// For each element, apply the predicate function.
+	// If the predicate returns true, append the element to the result slice.
+	for _, v := range elements {
+		// Check if the current element satisfies the predicate function fn.
+		// The predicate function fn is applied to the element v to determine if it should be included in the result.
+		if fn(v) {
+			// If the element satisfies the condition, it is added to the result slice.
+			// The append function dynamically grows the result slice and appends the element v to it.
+			result = append(result, v)
+		}
+	}
+
+	// Return the resulting slice containing only the elements that satisfy the predicate.
+	return result
+}
