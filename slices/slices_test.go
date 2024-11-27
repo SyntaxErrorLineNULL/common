@@ -619,3 +619,240 @@ func TestMap(t *testing.T) {
 		assert.Equal(t, expected, result, "Transformed and filtered output should match expected")
 	})
 }
+
+func TestFilter(t *testing.T) {
+	t.Parallel()
+
+	// FilterInt tests the behavior of the Filter function when applied to a variety of input slices.
+	// It ensures that the Filter function correctly filters elements based on the provided predicate function.
+	// The test cases cover a wide range of scenarios, including filtering even and odd numbers,
+	// handling empty slices, and dealing with slices where no elements match the predicate.
+	t.Run("FilterInt", func(t *testing.T) {
+		// Define a set of test cases with inputs and the expected output for each scenario.
+		// The test cases cover a range of situations, including nil inputs, empty inputs, and
+		// slices with elements, to ensure the Filter function behaves as intended in all cases.
+		cases := []struct {
+			name     string
+			elements []int
+			fn       func(int) bool
+			expected []int
+		}{
+			{name: "Filter even numbers", elements: []int{1, 2, 3, 4, 5}, fn: func(n int) bool { return n%2 == 0 }, expected: []int{2, 4}},
+			{name: "Filter odd numbers", elements: []int{1, 2, 3, 4, 5}, fn: func(n int) bool { return n%2 != 0 }, expected: []int{1, 3, 5}},
+			{name: "Empty slice", elements: []int{}, fn: func(n int) bool { return n%2 == 0 }, expected: nil},
+			{name: "All elements match predicate", elements: []int{2, 4, 6, 8}, fn: func(n int) bool { return n%2 == 0 }, expected: []int{2, 4, 6, 8}},
+			{name: "No elements match predicate", elements: []int{1, 3, 5, 7}, fn: func(n int) bool { return n%2 == 0 }, expected: nil},
+			{name: "Single element match", elements: []int{1}, fn: func(n int) bool { return n%2 == 0 }, expected: nil},
+			{name: "Single element match", elements: []int{2}, fn: func(n int) bool { return n%2 == 0 }, expected: []int{2}},
+			{name: "Mixed elements with no matching", elements: []int{1, 3, 5}, fn: func(n int) bool { return n%2 == 0 }, expected: nil},
+		}
+
+		// Iterate over the defined test cases, executing each one as a subtest.
+		// Subtests allow each test case to be run independently, making it easier
+		// to identify which specific case fails if an assertion does not hold.
+		for _, tt := range cases {
+			// Start a subtest for the current test case, using the test case's name.
+			t.Run(tt.name, func(t *testing.T) {
+				// Call the Filter function with the current test case's input slice and predicate function.
+				// This will filter the elements in the slice based on the predicate and return the filtered result.
+				result := Filter(tt.elements, tt.fn)
+
+				// Compare the result of the Filter function with the expected output.
+				// The assertion checks for equality and will fail the test if the result does not match the expected output.
+				assert.Equal(t, tt.expected, result, "For case '%s', expected %v but got %v", tt.name, tt.expected, result)
+			})
+		}
+	})
+
+	// FilterString tests the behavior of the Filter function when applied to a variety of string slices.
+	// It ensures that the Filter function correctly filters elements based on the provided predicate function.
+	// The test cases cover various filtering conditions such as matching the first character of a string,
+	// handling empty slices, and verifying the behavior when no elements match the predicate.
+	t.Run("FilterString", func(t *testing.T) {
+		// Define a set of test cases with inputs and the expected output for each scenario.
+		// The test cases cover a range of situations, including nil inputs, empty inputs, and
+		// slices with elements, to ensure the Filter function behaves as intended in all cases.
+		cases := []struct {
+			name     string
+			elements []string
+			fn       func(string) bool
+			expected []string
+		}{
+			{name: "Filter strings starting with 'a'", elements: []string{"apple", "banana", "avocado"}, fn: func(s string) bool { return len(s) > 0 && s[0] == 'a' }, expected: []string{"apple", "avocado"}},
+			{name: "Filter strings containing 'o'", elements: []string{"apple", "banana", "orange"}, fn: func(s string) bool { return len(s) > 0 && s[0] == 'o' }, expected: []string{"orange"}},
+			{name: "Empty slice", elements: []string{}, fn: func(s string) bool { return len(s) > 0 && s[0] == 'o' }, expected: nil},
+			{name: "All elements match predicate", elements: []string{"apple", "avocado", "orange"}, fn: func(s string) bool { return len(s) > 0 && s[0] == 'a' }, expected: []string{"apple", "avocado"}},
+			{name: "No elements match predicate", elements: []string{"banana", "grape", "pear"}, fn: func(s string) bool { return len(s) > 0 && s[0] == 'o' }, expected: nil},
+			{name: "Single element matches", elements: []string{"orange"}, fn: func(s string) bool { return len(s) > 0 && s[0] == 'o' }, expected: []string{"orange"}},
+			{name: "Single element does not match", elements: []string{"banana"}, fn: func(s string) bool { return len(s) > 0 && s[0] == 'o' }, expected: nil},
+		}
+
+		// Iterate over the defined test cases, executing each one as a subtest.
+		// Subtests allow each test case to be run independently, making it easier
+		// to identify which specific case fails if an assertion does not hold.
+		for _, tt := range cases {
+			// Start a subtest for the current test case, using the test case's name.
+			t.Run(tt.name, func(t *testing.T) {
+				// Call the Filter function with the current test case's input slice and predicate function.
+				// This will filter the elements in the slice based on the predicate and return the filtered result.
+				result := Filter(tt.elements, tt.fn)
+
+				// Compare the result of the Filter function with the expected output.
+				// The assertion checks for equality and will fail the test if the result does not match the expected output.
+				assert.Equal(t, tt.expected, result, "For case '%s', expected %v but got %v", tt.name, tt.expected, result)
+			})
+		}
+	})
+
+	// ComplexFilter tests the Filter function across a variety of complex scenarios involving different
+	// data types and predicates. It ensures that the Filter function can correctly handle various types
+	// such as integers, strings, structs, pointers, floats, complex numbers, and interfaces. The test cases
+	// verify that the Filter function behaves as expected in diverse filtering conditions, including nested
+	// filters, pointer slices, and mixed types in an interface slice.
+	t.Run("ComplexFilter", func(t *testing.T) {
+		// Define a set of test cases with inputs and the expected output for each scenario.
+		// The test cases cover a range of situations, including nil inputs, empty inputs, and
+		// slices with elements, to ensure the Filter function behaves as intended in all cases.
+		cases := []struct {
+			name     string
+			elements interface{}
+			fn       interface{}
+			expected interface{}
+		}{
+			{
+				name:     "Filter even numbers greater than 10",
+				elements: []int{5, 10, 11, 14, 15, 16},
+				fn:       func(n int) bool { return n%2 == 0 && n > 10 },
+				expected: []int{14, 16},
+			},
+			{
+				name:     "Filter strings containing 'e' and longer than 3 characters",
+				elements: []string{"apple", "banana", "cherry", "kiwi", "grape"},
+				fn:       func(s string) bool { return len(s) > 3 && strings.Contains(s, "e") },
+				expected: []string{"apple", "cherry", "grape"},
+			},
+			{
+				name: "Filter struct slices by boolean field",
+				elements: []struct {
+					name   string
+					active bool
+				}{{"alice", true}, {"bob", false}, {"charlie", true}},
+				fn: func(e struct {
+					name   string
+					active bool
+				}) bool {
+					return e.active
+				},
+				expected: []struct {
+					name   string
+					active bool
+				}{{"alice", true}, {"charlie", true}},
+			},
+			{
+				name: "Filter based on a custom struct field with nested filter",
+				elements: []struct {
+					name string
+					age  int
+				}{{"John", 25}, {"Jane", 30}, {"Doe", 15}},
+				fn: func(e struct {
+					name string
+					age  int
+				}) bool {
+					return e.age > 18 && e.age < 30
+				},
+				expected: []struct {
+					name string
+					age  int
+				}{{"John", 25}},
+			},
+			{
+				name:     "Filter out nil values from a pointer slice",
+				elements: []*string{nil, nil, strPtr("apple"), strPtr("banana"), nil},
+				fn:       func(s *string) bool { return s != nil && len(*s) > 5 },
+				expected: []*string{strPtr("banana")},
+			},
+			{
+				name:     "Filter float numbers greater than a threshold",
+				elements: []float64{1.2, 5.6, 7.8, 9.1},
+				fn:       func(f float64) bool { return f > 5.0 },
+				expected: []float64{5.6, 7.8, 9.1},
+			},
+			{
+				name:     "Filter complex numbers where real part is greater than imaginary",
+				elements: []complex128{complex(1, 2), complex(3, 1), complex(4, 5), complex(6, 3)},
+				fn:       func(c complex128) bool { return real(c) > imag(c) },
+				expected: []complex128{complex(3, 1), complex(6, 3)},
+			},
+			{
+				name: "Empty slice with custom condition on structs",
+				elements: []struct {
+					id   int
+					name string
+				}{},
+				fn: func(e struct {
+					id   int
+					name string
+				}) bool {
+					return e.id > 0
+				},
+				expected: nil,
+			},
+			{
+				name:     "Filter mixed types in an interface slice (interface{})",
+				elements: []interface{}{1, "hello", 2.5, "world", true},
+				fn:       func(v interface{}) bool { return fmt.Sprintf("%T", v) == "string" },
+				expected: []interface{}{"hello", "world"},
+			},
+		}
+
+		// Iterate over the defined test cases, executing each one as a subtest.
+		// Subtests allow each test case to be run independently, making it easier
+		// to identify which specific case fails if an assertion does not hold.
+		for _, tt := range cases {
+			// Start a subtest for the current test case, using the test case's name.
+			t.Run(tt.name, func(t *testing.T) {
+				// Handle each test case based on the input type.
+				var result interface{}
+				switch v := tt.elements.(type) {
+				case []int:
+					result = Filter(v, tt.fn.(func(int) bool))
+				case []string:
+					result = Filter(v, tt.fn.(func(string) bool))
+				case []struct {
+					name   string
+					active bool
+				}:
+					result = Filter(v, tt.fn.(func(struct {
+						name   string
+						active bool
+					}) bool))
+				case []struct {
+					name string
+					age  int
+				}:
+					result = Filter(v, tt.fn.(func(struct {
+						name string
+						age  int
+					}) bool))
+				case []*string:
+					result = Filter(v, tt.fn.(func(*string) bool))
+				case []float64:
+					result = Filter(v, tt.fn.(func(float64) bool))
+				case []complex128:
+					result = Filter(v, tt.fn.(func(complex128) bool))
+				case []interface{}:
+					result = Filter(v, tt.fn.(func(interface{}) bool))
+				}
+
+				// Compare the result of the Filter function with the expected output.
+				// The assertion checks for equality and will fail the test if the result does not match the expected output.
+				assert.Equal(t, tt.expected, result, "For case '%s', expected %v but got %v", tt.name, tt.expected, result)
+			})
+		}
+	})
+}
+
+// strPtr is a helper function to create a pointer to a string.
+func strPtr(s string) *string {
+	return &s
+}
