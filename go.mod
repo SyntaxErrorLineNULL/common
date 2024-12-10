@@ -5,6 +5,7 @@ go 1.22
 require (
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/exp v0.0.0-20240808152545-0cdaa3abc0fa
+	golang.org/x/time v0.7.0
 )
 
 require (
