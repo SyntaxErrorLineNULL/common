@@ -1,8 +1,10 @@
 package buffer
 
 type RingBuffer struct {
-	buffer []byte
-	size   int64
+	buffer        []byte
+	size          int
+	startPosition int
+	endPosition   int
 }
 
 func NewRingBuffer() *RingBuffer {
