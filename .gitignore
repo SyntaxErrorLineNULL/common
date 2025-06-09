@@ -1,3 +1,11 @@
+# IDEA in VCS https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
+# If some of these files are tracking then you nedd remove tracking from files:
+#> git rm --cache .idea/workspace.xml
+#> git rm --cache .idea/usage.statistics.xml
+#> git rm --cache -r .idea/shelf/
+.idea
+.vscode
+
 # If you prefer the allow list template instead of the deny list, see community template:
 # https://github.com/github/gitignore/blob/main/community/Golang/Go.AllowList.gitignore
 #
